@@ -1,6 +1,6 @@
 {
-  "name": "BISMA",
-  "short_name": "BISMA",
+  "name": "PRIMA",
+  "short_name": "PRIMA",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -9,13 +9,13 @@
   "description": "TKA",
   "icons": [
     {
-      "src": "https://lh3.googleusercontent.com/d/1FV7EmCnGHRbpQvbbdrRv-t0KZCUXbIqk",
+      "src": "http://lh3.googleusercontent.com/d/1ezXCs_VCD_9IZwgWKjYT_i-OfXmeTW_I",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://lh3.googleusercontent.com/d/1FV7EmCnGHRbpQvbbdrRv-t0KZCUXbIqk",
+      "src": "http://lh3.googleusercontent.com/d/1ezXCs_VCD_9IZwgWKjYT_i-OfXmeTW_I",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
