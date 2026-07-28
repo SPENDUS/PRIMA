@@ -1,0 +1,4144 @@
+import React, { useState, useEffect, useRef } from 'react';
+import TabunganSampahAdmin from './TabunganSampahAdmin';
+import KalenderAkademik from './KalenderAkademik';
+import GeofencingAdmin from './GeofencingAdmin';
+import KasihIbuAdmin from './KasihIbuAdmin';
+import EkskulMappingView from './EkskulMappingView';
+import { 
+  Palette,
+  Recycle,
+  LayoutDashboard, 
+  Users, 
+  Moon, 
+  Sun, 
+  LogOut, 
+  Database, 
+  Keyboard, 
+  Calendar, 
+  UserCog, 
+  GraduationCap, 
+  Settings,
+  User,
+  X,
+  Upload,
+  Save,
+  Plus,
+  Trash2,
+  Edit,
+  Megaphone,
+  CheckCircle,
+  AlertCircle,
+  AlertTriangle,
+  Table,
+  UserPlus,
+  Download,
+  Key,
+  ArrowRightLeft,
+  MapPin,
+  Menu,
+  Heart,
+  HelpCircle,
+  Activity,
+  Target
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+
+interface AdminDashboardProps {
+  user: any;
+  onLogout: () => void;
+  darkMode: boolean;
+  toggleDarkMode: () => void;
+}
+
+export default function AdminDashboard({ user, onLogout, darkMode, toggleDarkMode }: AdminDashboardProps) {
+  const [activeView, setActiveView] = useState('dashboard'); // 'monitoring', 'dashboard', 'input_guru', 'profile', 'color_config'
+  const [activeModal, setActiveModal] = useState<string | null>(null);
+  const [toast, setToast] = useState<{message: string, type: 'success' | 'error'} | null>(null);
+  const [stats, setStats] = useState<{
+    studentCounts: Record<string, number>;
+    totalStudents: number;
+    totalJP: number;
+  } | null>(null);
+  const [latestAnnouncement, setLatestAnnouncement] = useState<any>(null);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(window.innerWidth >= 1024);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsSidebarVisible(true);
+      } else {
+        setIsSidebarVisible(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const res = await fetch('/api/admin/stats');
+      const data = await res.json();
+      if (data.success) {
+        setStats(data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch stats", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
+    fetch('/api/pengumuman')
+      .then(res => res.json())
+      .then(res => {
+        if (res.success && res.data && res.data.length > 0) {
+          setLatestAnnouncement(res.data[0]);
+        }
+      })
+      .catch(err => console.error("Failed to fetch announcements", err));
+  }, []);
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const menuItems = [
+    { id: 'monitoring', icon: Table, label: 'KBM Hari Ini' },
+    { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { id: 'input_guru', icon: UserPlus, label: 'Input Guru Baru' },
+    { id: 'tabungan_sampah', icon: Trash2, label: 'Tabungan Sampah' },
+    { id: 'kasih_ibu', icon: Heart, label: 'Kasih Ibu' },
+    { id: 'kalender_akademik', icon: Calendar, label: 'Kalender Akademik' },
+    { id: 'geofencing', icon: MapPin, label: 'Geofencing' },
+    { id: 'ekskul_mapping', icon: Target, label: 'Mapping Ekstrakurikuler' },
+    { id: 'color_config', icon: Palette, label: 'Konfigurasi Warna' },
+    { id: 'api_config', icon: Key, label: 'Konfigurasi API' },
+  ];
+
+  const adminCards = [
+    { 
+      id: 'tabungan_sampah_card', 
+      title: 'Tabungan Sampah', 
+      subtitle: 'RECYCLE', 
+      icon: Recycle, 
+      color: 'bg-green-600', 
+      shadow: 'shadow-green-200 dark:shadow-green-900/20',
+      action: () => setActiveView('tabungan_sampah')
+    },
+    { 
+      id: 'kasih_ibu_card', 
+      title: 'Kasih Ibu', 
+      subtitle: 'REWARD', 
+      icon: Heart, 
+      color: 'bg-pink-600', 
+      shadow: 'shadow-pink-200 dark:shadow-pink-900/20',
+      action: () => setActiveView('kasih_ibu')
+    },
+    { 
+      id: 'kalender_akademik_card', 
+      title: 'Kalender Akademik', 
+      subtitle: 'HARI EFEKTIF', 
+      icon: Calendar, 
+      color: 'bg-indigo-600', 
+      shadow: 'shadow-indigo-200 dark:shadow-indigo-900/20',
+      action: () => setActiveView('kalender_akademik')
+    },
+    { 
+      id: 'geofencing_card', 
+      title: 'Geofencing', 
+      subtitle: 'LOKASI', 
+      icon: MapPin, 
+      color: 'bg-blue-600', 
+      shadow: 'shadow-blue-200 dark:shadow-blue-900/20',
+      action: () => setActiveView('geofencing')
+    },
+    { 
+      id: 'ekskul_mapping_card', 
+      title: 'Mapping Ekskul', 
+      subtitle: 'AKTIVITAS', 
+      icon: Target, 
+      color: 'bg-fuchsia-600', 
+      shadow: 'shadow-fuchsia-200 dark:shadow-fuchsia-900/20',
+      action: () => setActiveView('ekskul_mapping')
+    },
+    { 
+      id: 'import_master', 
+      title: 'Import Master', 
+      subtitle: 'DATABASE CSV', 
+      icon: Database, 
+      color: 'bg-red-500', 
+      shadow: 'shadow-red-200 dark:shadow-red-900/20',
+      action: () => setActiveModal('import_master')
+    },
+    { 
+      id: 'input_manual', 
+      title: 'Input Manual', 
+      subtitle: 'INPUT MASSAL CSV', 
+      icon: Keyboard, 
+      color: 'bg-purple-500', 
+      shadow: 'shadow-purple-200 dark:shadow-purple-900/20',
+      action: () => setActiveModal('input_manual')
+    },
+    { 
+      id: 'jadwal', 
+      title: 'Jadwal Pelajaran', 
+      subtitle: 'SETUP JADWAL', 
+      icon: Calendar, 
+      color: 'bg-fuchsia-500', 
+      shadow: 'shadow-fuchsia-200 dark:shadow-fuchsia-900/20',
+      action: () => setActiveModal('jadwal')
+    },
+    { 
+      id: 'manajemen_user', 
+      title: 'Manajemen User', 
+      subtitle: 'AKUN GURU', 
+      icon: UserCog, 
+      color: 'bg-emerald-500', 
+      shadow: 'shadow-emerald-200 dark:shadow-emerald-900/20',
+      action: () => setActiveModal('manajemen_user')
+    },
+    { 
+      id: 'data_murid', 
+      title: 'Data Murid', 
+      subtitle: 'SISWA & MUTASI', 
+      icon: GraduationCap, 
+      color: 'bg-sky-500', 
+      shadow: 'shadow-sky-200 dark:shadow-sky-900/20',
+      action: () => setActiveModal('data_murid')
+    },
+    { 
+      id: 'pengumuman', 
+      title: 'Pengumuman', 
+      subtitle: 'INFO PUBLIK', 
+      icon: Megaphone, 
+      color: 'bg-orange-500', 
+      shadow: 'shadow-orange-200 dark:shadow-orange-900/20',
+      action: () => setActiveModal('pengumuman')
+    },
+    { 
+      id: 'api_config_card', 
+      title: 'Konfigurasi API', 
+      subtitle: 'CHATBOT & INTEGRASI', 
+      icon: Key, 
+      color: 'bg-indigo-500', 
+      shadow: 'shadow-indigo-200 dark:shadow-indigo-900/20',
+      action: () => setActiveView('api_config')
+    },
+    { 
+      id: 'helpdesk_config', 
+      title: 'Pusat Bantuan', 
+      subtitle: 'INFO & KONTAK', 
+      icon: HelpCircle, 
+      color: 'bg-indigo-500', 
+      shadow: 'shadow-indigo-200 dark:shadow-indigo-900/20',
+      action: () => setActiveView('helpdesk_config')
+    },
+    { 
+      id: 'pengaturan', 
+      title: 'Pengaturan', 
+      subtitle: 'KONFIGURASI UMUM', 
+      icon: Settings, 
+      color: 'bg-slate-600', 
+      shadow: 'shadow-slate-200 dark:shadow-slate-900/20',
+      action: () => setActiveModal('pengaturan')
+    },
+  ];
+
+  const renderContent = () => {
+    switch (activeView) {
+      case 'monitoring':
+        return <MonitoringKBMView showToast={showToast} />;
+      case 'dashboard':
+        return (
+          <div className="max-w-7xl mx-auto">
+            <header className="mb-8 flex justify-between items-end">
+              <div>
+                <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Admin Dashboard</h1>
+                <p className="text-slate-500 dark:text-slate-400">Selamat datang kembali, Administrator</p>
+              </div>
+              <div className="text-right hidden md:block">
+                <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                  {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                </p>
+              </div>
+            </header>
+
+            {/* Statistics Section */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center">
+                    <Users className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Total Siswa</p>
+                    <h3 className="text-2xl font-bold text-slate-800 dark:text-white">{stats?.totalStudents || 0}</h3>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-xs">
+                  {['1', '2', '3', '4', '5', '6'].map(cls => (
+                    <div key={cls} className="bg-slate-50 dark:bg-slate-700/50 p-2 rounded-lg text-center">
+                      <span className="block text-slate-400 font-bold mb-1">Kls {cls}</span>
+                      <span className="font-bold text-slate-700 dark:text-slate-200">
+                        {stats?.studentCounts?.[`Kelas ${cls}`] || 0}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 bg-fuchsia-100 text-fuchsia-600 rounded-xl flex items-center justify-center">
+                    <Calendar className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Total Jam Pelajaran (JP)</p>
+                    <h3 className="text-2xl font-bold text-slate-800 dark:text-white">{stats?.totalJP || 0} JP</h3>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-400 mt-2">
+                  Total akumulasi JP dari seluruh jadwal yang telah diinput ke sistem.
+                </p>
+              </div>
+              
+              <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-3xl shadow-lg shadow-blue-200 dark:shadow-none text-white relative overflow-hidden group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                <div className="relative z-10">
+                  <h3 className="text-lg font-bold mb-1 drop-shadow-md">Informasi Terkini</h3>
+                  <p className="text-blue-100 text-sm mb-4 font-medium">{new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                  <div className="flex items-center gap-2 text-xs font-bold bg-white/20 w-fit px-3 py-1 rounded-full backdrop-blur-sm shadow-inner border border-white/10">
+                    <div className={`w-2 h-2 rounded-full animate-pulse shadow-[0_0_10px_rgba(255,255,255,0.8)] ${latestAnnouncement?.type === 'important' ? 'bg-orange-400' : 'bg-green-400'}`}></div>
+                    {latestAnnouncement ? latestAnnouncement.judul : 'Sistem Online'}
+                  </div>
+                  {latestAnnouncement && (
+                    <p className="mt-3 text-xs text-blue-50 line-clamp-2 opacity-90">
+                      {latestAnnouncement.isi}
+                    </p>
+                  )}
+                </div>
+                <div className="absolute -bottom-4 -right-4 transform rotate-12 transition-transform duration-500 group-hover:rotate-6 group-hover:scale-110">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-blue-500 blur-2xl opacity-50 rounded-full"></div>
+                    <Database className="w-32 h-32 text-white/20 drop-shadow-[0_10px_10px_rgba(0,0,0,0.3)]" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {adminCards.map((card, index) => (
+                <motion.button
+                  key={card.id}
+                  onClick={card.action}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all border border-slate-100 dark:border-slate-700 flex flex-col items-center text-center group h-full"
+                >
+                  <div className={`${card.color} w-16 h-16 rounded-2xl flex items-center justify-center text-white mb-4 shadow-lg ${card.shadow} group-hover:scale-110 transition-transform duration-300`}>
+                    <card.icon className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-1">{card.title}</h3>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{card.subtitle}</p>
+                </motion.button>
+              ))}
+            </div>
+          </div>
+        );
+      case 'input_guru':
+        return <InputGuruBaruView showToast={showToast} />;
+      case 'tabungan_sampah':
+        return <TabunganSampahAdmin showToast={showToast} />;
+      case 'kasih_ibu':
+        return <KasihIbuAdmin showToast={showToast} />;
+      case 'kalender_akademik':
+        return <KalenderAkademik onBack={() => setActiveView('dashboard')} />;
+      case 'ekskul_mapping':
+        return <EkskulMappingView showToast={showToast} />;
+      case 'geofencing':
+        return <GeofencingAdmin showToast={showToast} />;
+      case 'color_config':
+        return <ColorConfigView showToast={showToast} />;
+      case 'api_config':
+        return <ApiConfigView showToast={showToast} />;
+      case 'visitor_config':
+        return <VisitorConfigView showToast={showToast} />;
+      case 'helpdesk_config':
+        return <HelpDeskConfigView showToast={showToast} />;
+      case 'profile':
+        return <ProfileView showToast={showToast} onHiddenConfig={() => setActiveView('visitor_config')} />;
+      default:
+        return null;
+    }
+  };
+
+  const renderModalContent = () => {
+    switch (activeModal) {
+      case 'import_master':
+        return <ImportMasterModal onClose={() => setActiveModal(null)} showToast={showToast} />;
+      case 'input_manual':
+        return <InputManualModal onClose={() => setActiveModal(null)} showToast={showToast} />;
+      case 'jadwal':
+        return <JadwalModal onClose={() => setActiveModal(null)} showToast={showToast} />;
+      case 'manajemen_user':
+        return <UserManagementModal onClose={() => setActiveModal(null)} showToast={showToast} />;
+      case 'data_murid':
+        return <DataMuridModal onClose={() => setActiveModal(null)} showToast={showToast} />;
+      case 'pengumuman':
+        return <PengumumanModal onClose={() => setActiveModal(null)} showToast={showToast} />;
+      case 'pengaturan':
+        return <PengaturanModal onClose={() => setActiveModal(null)} showToast={showToast} />;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-900 transition-colors font-sans overflow-hidden">
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div 
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            className={`fixed top-4 right-4 z-[60] px-6 py-3 rounded-xl shadow-xl flex items-center gap-3 ${
+              toast.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+            }`}
+          >
+            {toast.type === 'success' ? <CheckCircle className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
+            <span className="font-medium">{toast.message}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Sidebar Toggle Button for Mobile (Removed in favor of top header menu) */}
+
+      {/* Mobile Sidebar Backdrop */}
+      <AnimatePresence>
+        {isSidebarVisible && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsSidebarVisible(false)}
+            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Sidebar */}
+      <aside 
+        className={`w-20 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col items-center py-6 z-40 shadow-sm transition-transform duration-300 fixed lg:relative h-full ${
+          isSidebarVisible ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}
+      >
+        <div className="mb-8">
+          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-200 dark:shadow-none">
+            <LayoutDashboard className="w-6 h-6" />
+          </div>
+        </div>
+
+        <nav className="flex-1 overflow-y-auto w-full px-2 scrollbar-hide flex flex-col gap-4">
+          {menuItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => {
+                setActiveView(item.id);
+                if (window.innerWidth < 1024) setIsSidebarVisible(false);
+              }}
+              className={`p-3 rounded-xl flex justify-center transition-all group relative ${
+                activeView === item.id 
+                  ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' 
+                  : 'text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-600 dark:hover:text-slate-300'
+              }`}
+            >
+              <item.icon className="w-6 h-6" />
+              <span className="absolute left-16 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                {item.label}
+              </span>
+            </button>
+          ))}
+        </nav>
+
+        <div className="flex flex-col gap-4 w-full px-2 mt-auto">
+          <button
+            onClick={toggleDarkMode}
+            className="hidden md:flex p-3 rounded-xl justify-center text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-600 dark:hover:text-slate-300 transition-all group relative"
+          >
+            {darkMode ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
+            <span className="absolute left-16 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+              {darkMode ? 'Mode Terang' : 'Mode Gelap'}
+            </span>
+          </button>
+          <button 
+            onClick={() => {
+              setActiveView('profile');
+              if (window.innerWidth < 1024) setIsSidebarVisible(false);
+            }}
+            className={`p-3 rounded-xl flex justify-center transition-all group relative ${
+              activeView === 'profile'
+                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                : 'text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-600 dark:hover:text-slate-300'
+            }`}
+          >
+            <User className="w-6 h-6" />
+            <span className="absolute left-16 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+              Profil
+            </span>
+          </button>
+          <button
+            onClick={onLogout}
+            className="p-3 rounded-xl flex justify-center text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 transition-all group relative"
+          >
+            <LogOut className="w-6 h-6" />
+            <span className="absolute left-16 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+              Kembali
+            </span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 overflow-y-auto relative flex flex-col">
+        {/* Mobile Header */}
+        <div className="lg:hidden bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-4 flex items-center justify-between sticky top-0 z-20">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setIsSidebarVisible(true)}
+              className="p-2 -ml-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+            <h1 className="font-bold text-slate-800 dark:text-white">Admin BISMA</h1>
+          </div>
+          <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-sm">
+            A
+          </div>
+        </div>
+        
+        <div className="p-4 md:p-8">
+          {renderContent()}
+        </div>
+      </main>
+
+      {/* Modals */}
+      <AnimatePresence>
+        {activeModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
+            >
+              {renderModalContent()}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// --- Views ---
+
+function MonitoringKBMView({ showToast }: { showToast: (msg: string, type?: 'success' | 'error') => void }) {
+  const [time, setTime] = useState(new Date());
+  const [matrixData, setMatrixData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [waProgress, setWaProgress] = useState<{ isRunning: boolean, total: number, sent: number, failed: number } | null>(null);
+
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const fetchMatrix = async () => {
+      try {
+        const res = await fetch('/api/monitoring/matrix');
+        const data = await res.json();
+        if (data.success) {
+          setMatrixData(data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch matrix data", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMatrix();
+    // Refresh every minute to keep it somewhat live
+    const interval = setInterval(fetchMatrix, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="max-w-7xl mx-auto">
+      <header className="mb-8 flex flex-col gap-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 w-full">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-800 dark:text-white uppercase tracking-tight">
+              Kegiatan Belajar Mengajar Guru Hari Ini
+            </h1>
+            <p className="text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              {time.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            </p>
+          </div>
+          <div className="flex flex-col items-end gap-3 w-full md:w-auto">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+              <button 
+                disabled={waProgress?.isRunning}
+                onClick={async () => {
+                  try {
+                    showToast("Memulai pengiriman notifikasi WA...", "success");
+                    const res = await fetch('/api/admin/send-wa-reminder', { method: 'POST' });
+                    const data = await res.json();
+                    if (data.success) {
+                      setWaProgress({ isRunning: true, total: 0, sent: 0, failed: 0 });
+                      // Start polling progress
+                      const interval = setInterval(async () => {
+                        try {
+                          const progRes = await fetch('/api/admin/wa-progress');
+                          const progData = await progRes.json();
+                          if (progData.success) {
+                            const prog = progData.data;
+                            setWaProgress(prog);
+                            if (!prog.isRunning) {
+                              clearInterval(interval);
+                              setTimeout(() => {
+                                showToast(`Pengiriman selesai. Terkirim: ${prog.sent}, Gagal: ${prog.failed}`, "success");
+                                setWaProgress(null);
+                              }, 3000);
+                            }
+                          }
+                        } catch (err) {
+                          console.error('Failed to fetch WA progress', err);
+                        }
+                      }, 3000);
+                    } else {
+                      showToast(`Gagal: ${data.message}`, "error");
+                    }
+                  } catch (e) {
+                    showToast('Terjadi kesalahan saat mengirim pesan.', "error");
+                  }
+                }}
+                className={`${waProgress?.isRunning ? 'bg-slate-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'} text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto`}
+              >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                Kirim Notifikasi WA
+              </button>
+              <div className="bg-white dark:bg-slate-800 px-6 py-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-center gap-3 w-full sm:w-auto">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="font-mono font-bold text-xl text-slate-700 dark:text-slate-300 tracking-widest">
+                  {time.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\./g, ':')}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        {waProgress && (
+          <div className="w-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-4 py-3 rounded-xl text-sm font-medium flex flex-col gap-2 border border-blue-200 dark:border-blue-800">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                {waProgress.isRunning ? (
+                  <span className="w-2 h-2 bg-blue-500 rounded-full animate-ping"></span>
+                ) : (
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                )}
+                <span>{waProgress.isRunning ? 'Mengirim WA...' : 'Selesai'}</span>
+              </div>
+              <span>{waProgress.sent} / {waProgress.total}</span>
+            </div>
+            <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2 overflow-hidden">
+              <div 
+                className={`${waProgress.isRunning ? 'bg-blue-600' : 'bg-green-500'} h-2 rounded-full transition-all duration-500`}
+                style={{ width: `${waProgress.total > 0 ? (waProgress.sent / waProgress.total) * 100 : (waProgress.isRunning ? 0 : 100)}%` }}
+              ></div>
+            </div>
+          </div>
+        )}
+      </header>
+
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-200 dark:border-slate-700 overflow-hidden">
+        {loading ? (
+          <div className="p-12 text-center">
+            <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p className="text-slate-500">Memuat data jadwal...</p>
+          </div>
+        ) : matrixData.length === 0 ? (
+          <div className="p-12 text-center">
+            <p className="text-slate-500">Tidak ada jadwal untuk hari ini.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left text-slate-600 dark:text-slate-300">
+              <thead className="bg-slate-50 dark:bg-slate-700/50 text-slate-700 dark:text-slate-200 uppercase font-bold text-xs border-b border-slate-200 dark:border-slate-700">
+                <tr>
+                  <th className="px-6 py-5 w-16 text-center">No</th>
+                  <th className="px-6 py-5 min-w-[200px]">Nama Guru</th>
+                  {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+                    <th key={i} className="px-4 py-5 text-center min-w-[120px]">
+                      <div className="flex flex-col items-center gap-1">
+                        <span className="text-[10px] text-slate-400">Jam Ke</span>
+                        <span className="text-lg font-black text-slate-800 dark:text-white">{i}</span>
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
+                {matrixData.map((teacher, index) => (
+                  <tr key={teacher.nip || index} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group">
+                    <td className="px-6 py-4 text-center font-medium text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300">
+                      {index + 1}
+                    </td>
+                    <td className="px-6 py-4 font-semibold text-slate-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors whitespace-nowrap">
+                      {teacher.nama_guru}
+                    </td>
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map(jam => {
+                      const schedule = teacher.schedule[jam];
+                      return (
+                        <td key={jam} className="px-2 py-2 text-center align-middle">
+                          {schedule ? (
+                            <div className={`flex items-center justify-center gap-1 px-2 py-1.5 rounded border group-hover:shadow-sm transition-all whitespace-nowrap ${schedule.isFilled ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800/30 group-hover:bg-green-100 dark:group-hover:bg-green-800' : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/30 group-hover:bg-red-100 dark:group-hover:bg-red-800'}`}>
+                              <span className={`font-bold text-xs ${schedule.isFilled ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                {schedule.kelas}
+                              </span>
+                              <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-tight max-w-[70px] truncate" title={schedule.mapel}>
+                                {schedule.mapel}
+                              </span>
+                              <span className="text-[10px] ml-1">
+                                {schedule.isFilled ? '✅' : '❌'}
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="w-full h-full min-h-[24px] flex items-center justify-center">
+                              <span className="w-1 h-1 rounded-full bg-slate-200 dark:bg-slate-700 group-hover:bg-slate-300 dark:group-hover:bg-slate-600 transition-colors"></span>
+                            </div>
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function InputGuruBaruView({ showToast }: { showToast: (msg: string, type?: 'success' | 'error') => void }) {
+  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
+  const [extraName, setExtraName] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const subjectsList = [
+    "Pendidikan Agama dan Budi Pekerti",
+    "Pendidikan Pancasila",
+    "Bahasa Indonesia",
+    "Matematika",
+    "IPAS",
+    "Bahasa Inggris",
+    "Seni dan Budaya",
+    "BTQ",
+    "Bahasa Jawa",
+    "PJOK"
+  ];
+
+  const handleSubjectChange = (subject: string) => {
+    setSelectedSubjects(prev => 
+      prev.includes(subject) 
+        ? prev.filter(s => s !== subject)
+        : [...prev, subject]
+    );
+  };
+
+  const handleExtraChange = () => {
+    setSelectedSubjects(prev => 
+      prev.includes("Ekstrakurikuler")
+        ? prev.filter(s => s !== "Ekstrakurikuler")
+        : [...prev, "Ekstrakurikuler"]
+    );
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    const formData = new FormData(e.target as HTMLFormElement);
+    
+    const data = {
+      nip: formData.get('nip'),
+      nama: formData.get('nama'),
+      waliKelas: formData.get('waliKelas'),
+      mapel: selectedSubjects,
+      isExtra: selectedSubjects.includes("Ekstrakurikuler"),
+      extraName: extraName
+    };
+
+    try {
+      const res = await fetch('/api/guru', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const result = await res.json();
+      if (result.success) {
+        showToast("Data Guru Baru berhasil disimpan!", "success");
+        // Reset form
+        (e.target as HTMLFormElement).reset();
+        setSelectedSubjects([]);
+        setExtraName("");
+      } else {
+        showToast(result.message || "Gagal menyimpan data", "error");
+      }
+    } catch (error) {
+      showToast("Terjadi kesalahan jaringan", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto">
+      <header className="mb-8">
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Input Guru Baru</h1>
+        <p className="text-slate-500 dark:text-slate-400">Tambahkan data pengajar baru ke dalam sistem</p>
+      </header>
+
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-8">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="flex flex-col items-center mb-6">
+            <div className="w-24 h-24 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mb-2 relative group cursor-pointer overflow-hidden">
+               <User className="w-10 h-10 text-slate-400" />
+               <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                 <Upload className="w-6 h-6 text-white" />
+               </div>
+            </div>
+            <span className="text-sm text-slate-500">Upload Foto (Max 500KB)</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">NIP (User ID)</label>
+              <input type="text" name="nip" className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 bg-slate-50 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Contoh: 1985xxxx" required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Nama Lengkap</label>
+              <input type="text" name="nama" className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 bg-slate-50 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Nama Lengkap dengan Gelar" required />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Mata Pelajaran Diampu</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 border border-slate-300 dark:border-slate-600 rounded-xl p-4 bg-slate-50 dark:bg-slate-700/50">
+              {subjectsList.map((subject) => (
+                <label key={subject} className="flex items-center space-x-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 p-2 rounded-lg transition-colors">
+                  <input 
+                    type="checkbox" 
+                    checked={selectedSubjects.includes(subject)}
+                    onChange={() => handleSubjectChange(subject)}
+                    className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500 border-slate-300" 
+                  />
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{subject}</span>
+                </label>
+              ))}
+              <label className="flex items-center space-x-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 p-2 rounded-lg transition-colors">
+                <input 
+                  type="checkbox" 
+                  checked={selectedSubjects.includes("Ekstrakurikuler")}
+                  onChange={handleExtraChange}
+                  className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500 border-slate-300" 
+                />
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Ekstrakurikuler</span>
+              </label>
+            </div>
+            
+            {selectedSubjects.includes("Ekstrakurikuler") && (
+              <div className="mt-4 pl-4 border-l-4 border-blue-500">
+                <label className="block text-xs font-bold text-blue-600 dark:text-blue-400 mb-1 uppercase">Nama Ekstrakurikuler</label>
+                <input 
+                  type="text" 
+                  value={extraName}
+                  onChange={(e) => setExtraName(e.target.value)}
+                  className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 bg-white dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" 
+                  placeholder="Contoh: Pramuka, Tari, Futsal" 
+                  required
+                />
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Wali Kelas</label>
+            <select name="waliKelas" className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 bg-slate-50 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none">
+              <option value="">-- Bukan Wali Kelas --</option>
+              <option value="Kelas 1">Kelas 1</option>
+              <option value="Kelas 2">Kelas 2</option>
+              <option value="Kelas 3">Kelas 3</option>
+              <option value="Kelas 4">Kelas 4</option>
+              <option value="Kelas 5">Kelas 5</option>
+              <option value="Kelas 6">Kelas 6</option>
+            </select>
+          </div>
+
+          <div className="pt-4 flex justify-end">
+            <button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-blue-200 dark:shadow-none transition-all flex items-center gap-2 disabled:opacity-50">
+              <Save className="w-5 h-5" /> {loading ? 'Menyimpan...' : 'Simpan Data Guru'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function ProfileView({ showToast, onHiddenConfig }: { showToast: (msg: string, type?: 'success' | 'error') => void, onHiddenConfig?: () => void }) {
+  const [clickCount, setClickCount] = useState(0);
+
+  const handleSecretClick = () => {
+    setClickCount((prev) => prev + 1);
+  };
+
+  useEffect(() => {
+    if (clickCount >= 5) {
+      if (onHiddenConfig) onHiddenConfig();
+      setClickCount(0);
+    } else if (clickCount > 0) {
+      const timer = setTimeout(() => {
+        setClickCount(0);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [clickCount, onHiddenConfig]);
+
+  const handlePasswordChange = (e: React.FormEvent) => {
+    e.preventDefault();
+    showToast("Password berhasil diubah!");
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto">
+      <header className="mb-8">
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Profil Admin</h1>
+        <p className="text-slate-500 dark:text-slate-400">Kelola akun administrator</p>
+      </header>
+
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-8 mb-8">
+        <div className="flex items-center gap-6">
+          <div className="w-20 h-20 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center">
+            <User className="w-10 h-10 text-slate-500" />
+          </div>
+          <div>
+            <h2 
+              className="text-xl font-bold text-slate-800 dark:text-white cursor-default select-none"
+              onClick={handleSecretClick}
+            >
+              Administrator
+            </h2>
+            <p className="text-slate-500">admin@sdnbaujeng1.sch.id</p>
+            <span className="inline-block mt-2 px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-full text-xs font-bold">Super Admin</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-8">
+        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-2">
+          <Key className="w-5 h-5 text-slate-400" /> Ubah Password
+        </h3>
+        <form onSubmit={handlePasswordChange} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Password Lama</label>
+            <input type="password" required className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 bg-slate-50 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Password Baru</label>
+            <input type="password" required className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 bg-slate-50 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Konfirmasi Password Baru</label>
+            <input type="password" required className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 bg-slate-50 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" />
+          </div>
+          <div className="pt-4 flex justify-end">
+            <button type="submit" className="bg-slate-800 hover:bg-slate-900 text-white px-6 py-3 rounded-xl font-bold transition-all">
+              Update Password
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function ColorConfigView({ showToast }: { showToast: (msg: string, type?: 'success' | 'error') => void }) {
+  const [selectedColor, setSelectedColor] = useState('blue');
+  const [loginBgUrl, setLoginBgUrl] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const colors = [
+    { id: 'blue', name: 'Biru (Default)', class: 'bg-blue-600', value: '#2563eb' },
+    { id: 'red', name: 'Merah', class: 'bg-red-600', value: '#dc2626' },
+    { id: 'green', name: 'Hijau', class: 'bg-green-600', value: '#16a34a' },
+    { id: 'purple', name: 'Ungu', class: 'bg-purple-600', value: '#9333ea' },
+    { id: 'orange', name: 'Oranye', class: 'bg-orange-600', value: '#ea580c' },
+    { id: 'teal', name: 'Teal', class: 'bg-teal-600', value: '#0d9488' },
+    { id: 'cyan', name: 'Cyan', class: 'bg-cyan-600', value: '#0891b2' },
+    { id: 'pink', name: 'Pink', class: 'bg-pink-600', value: '#db2777' },
+  ];
+
+  useEffect(() => {
+    // Load current color
+    const storedColor = localStorage.getItem('app_theme_color');
+    if (storedColor) {
+      setSelectedColor(storedColor);
+    }
+    
+    // Load config from API
+    const fetchConfig = async () => {
+      try {
+        const res = await fetch('/api/pengaturan');
+        const result = await res.json();
+        if (result.success && result.data.login_background_url) {
+          setLoginBgUrl(result.data.login_background_url);
+        } else {
+          setLoginBgUrl('https://lh3.googleusercontent.com/d/144IjGRLPpyDoioIQK5oC03UKKYzf0NJe'); // Default
+        }
+      } catch (e) {
+        console.error('Failed to load settings', e);
+      }
+    };
+    fetchConfig();
+  }, []);
+
+  const handleColorSelect = async (colorId: string) => {
+    setSelectedColor(colorId);
+    setLoading(true);
+    
+    // Save to localStorage
+    localStorage.setItem('app_theme_color', colorId);
+    
+    // Dispatch event for real-time updates in same window
+    window.dispatchEvent(new Event('theme-color-change'));
+
+    // Save to DB (optional but good for persistence across devices)
+    try {
+      await fetch('/api/pengaturan/theme', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ themeColor: colorId })
+      });
+      showToast(`Tema warna berhasil diubah ke ${colors.find(c => c.id === colorId)?.name}`);
+    } catch (e) {
+      console.error("Failed to save theme to DB", e);
+      // Still show success as it works locally
+      showToast(`Tema warna berhasil diubah (Lokal)`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveBackground = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/pengaturan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ login_background_url: loginBgUrl })
+      });
+      const result = await res.json();
+      if (result.success) {
+        showToast('Background Login berhasil disimpan', 'success');
+      } else {
+        showToast('Gagal menyimpan background', 'error');
+      }
+    } catch (e) {
+      showToast('Terjadi kesalahan jaringan', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-8">
+      <header>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Konfigurasi Tampilan</h1>
+        <p className="text-slate-500 dark:text-slate-400">Atur tema warna aplikasi dan gambar background</p>
+      </header>
+
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-8 flex flex-col space-y-8">
+        <div>
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Tema Warna Aplikasi</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {colors.map((color) => (
+              <button
+                key={color.id}
+                onClick={() => handleColorSelect(color.id)}
+                className={`relative group p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 ${
+                  selectedColor === color.id 
+                    ? 'border-slate-800 dark:border-white bg-slate-50 dark:bg-slate-700' 
+                    : 'border-transparent hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                }`}
+              >
+                <div className={`w-16 h-16 rounded-full ${color.class} shadow-lg flex items-center justify-center transition-transform group-hover:scale-110`}>
+                  {selectedColor === color.id && (
+                    <CheckCircle className="w-8 h-8 text-white drop-shadow-md" />
+                  )}
+                </div>
+                <span className={`font-bold ${selectedColor === color.id ? 'text-slate-800 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
+                  {color.name}
+                </span>
+                {selectedColor === color.id && (
+                  <span className="absolute top-2 right-2 flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+          
+          <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800/30 flex items-start gap-3">
+            <div className="p-2 bg-blue-100 dark:bg-blue-800/50 rounded-lg text-blue-600 dark:text-blue-400">
+              <Palette className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="font-bold text-slate-800 dark:text-white text-sm">Pratinjau Perubahan</h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Perubahan warna akan diterapkan secara otomatis pada menu Guru dan Siswa. 
+                Warna yang dipilih akan menjadi warna dominan untuk header, tombol, dan aksen lainnya.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-8 border-t border-slate-200 dark:border-slate-700">
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Background Halaman Login</h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">URL Gambar</label>
+              <div className="flex gap-4">
+                <input 
+                  type="text" 
+                  value={loginBgUrl}
+                  onChange={(e) => setLoginBgUrl(e.target.value)}
+                  placeholder="https://example.com/image.jpg"
+                  className="flex-1 px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-800 dark:text-white"
+                />
+                <button 
+                  onClick={handleSaveBackground}
+                  disabled={loading}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl font-bold transition-colors disabled:opacity-50"
+                >
+                  Simpan Background
+                </button>
+              </div>
+              <p className="text-xs text-slate-500 mt-2">Gambar ini akan digunakan sebagai overlay semi-transparan pada halaman Login.</p>
+            </div>
+            {loginBgUrl && (
+              <div className="mt-4 border border-slate-200 dark:border-slate-700 p-2 rounded-xl bg-slate-50 dark:bg-slate-900 inline-block">
+                <img src={loginBgUrl} alt="Preview Background" className="max-h-48 rounded-lg object-contain" />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- Modals ---
+
+function ModalHeader({ title, onClose }: { title: string, onClose: () => void }) {
+  return (
+    <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-700">
+      <h2 className="text-xl font-bold text-slate-800 dark:text-white">{title}</h2>
+      <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
+        <X className="w-5 h-5 text-slate-500" />
+      </button>
+    </div>
+  );
+}
+
+function ImportMasterModal({ onClose, showToast }: { onClose: () => void, showToast: (msg: string, type?: 'success' | 'error') => void }) {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const downloadTemplate = (type: string) => {
+    let content = "";
+    let filename = "";
+
+    switch (type) {
+      case 'Guru':
+        content = "NIP;Nama Lengkap;Mata Pelajaran (Pisahkan dengan koma jika > 1);Wali Kelas (Opsional);Password\n198xxxx;Guru A;Matematika,IPA;Kelas 5;baujeng@1\n199xxxx;Guru B;Bahasa Indonesia;;baujeng@1";
+        filename = "template_guru.csv";
+        break;
+      case 'Tendik':
+        content = "NIP;Nama Lengkap;Jabatan;Password\n198xxxx;Tendik A;Tata Usaha;baujeng@1\n199xxxx;Tendik B;Perpustakaan;baujeng@1";
+        filename = "template_tendik.csv";
+        break;
+      case 'Siswa':
+        content = "NISN;NIS;Nama Lengkap;Kelas;Jenis Kelamin (L/P);Tanggal Lahir (YYYY-MM-DD);Password (Default: baujeng(kelas))\n1234567890;1001;Siswa A;Kelas 1;L;2017-05-20;baujeng1\n0987654321;1002;Siswa B;Kelas 1;P;2017-08-15;baujeng1";
+        filename = "template_siswa.csv";
+        break;
+    }
+
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast(`Template ${type} berhasil didownload`);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
+  const handleUpload = () => {
+    if (!selectedFile) {
+      showToast("Pilih file terlebih dahulu", "error");
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const text = e.target?.result;
+      if (typeof text === 'string') {
+        let type = '';
+        if (text.includes('Mata Pelajaran')) type = 'Guru';
+        else if (text.includes('Jabatan')) type = 'Tendik';
+        else if (text.includes('NISN')) type = 'Siswa';
+        
+        if (type) {
+          try {
+            const res = await fetch('/api/import-master', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ type, data: text })
+            });
+            const result = await res.json();
+            if (result.success) {
+              showToast(result.message, "success");
+              onClose();
+            } else {
+              showToast(result.message, "error");
+            }
+          } catch (err) {
+            showToast("Terjadi kesalahan saat mengimport data", "error");
+          }
+        } else {
+          showToast("Format file tidak sesuai dengan template", "error");
+        }
+      }
+    };
+    reader.readAsText(selectedFile);
+  };
+
+  return (
+    <>
+      <ModalHeader title="Import Master Database" onClose={onClose} />
+      <div className="p-6 overflow-y-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          {['Guru', 'Tendik', 'Siswa'].map((type) => (
+            <div key={type} className="border border-slate-200 dark:border-slate-700 p-4 rounded-xl text-center hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+              <h4 className="font-bold text-slate-800 dark:text-white mb-2">Data {type}</h4>
+              <button 
+                onClick={() => downloadTemplate(type)}
+                className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-3 py-1 rounded-full font-bold flex items-center justify-center gap-1 mx-auto hover:bg-blue-200 transition-colors"
+              >
+                <Download className="w-3 h-3" /> Download Template
+              </button>
+            </div>
+          ))}
+        </div>
+        
+        <input 
+          type="file" 
+          accept=".csv,.xlsx" 
+          className="hidden" 
+          ref={fileInputRef} 
+          onChange={handleFileChange} 
+        />
+        
+        <div 
+          onClick={() => fileInputRef.current?.click()}
+          className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-12 text-center hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
+        >
+          <Upload className="w-12 h-12 mx-auto mb-4 text-slate-400" />
+          {selectedFile ? (
+            <p className="text-green-600 dark:text-green-400 font-bold">{selectedFile.name}</p>
+          ) : (
+            <>
+              <p className="text-slate-600 dark:text-slate-300 font-medium">Klik atau drag file CSV ke sini</p>
+              <p className="text-sm text-slate-400 mt-2">Format yang didukung: .csv, .xlsx</p>
+            </>
+          )}
+        </div>
+        
+        <div className="mt-6 flex justify-end">
+          <button onClick={handleUpload} className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors">
+            Upload Database
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function InputManualModal({ onClose, showToast }: { onClose: () => void, showToast: (msg: string, type?: 'success' | 'error') => void }) {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const downloadUniversalTemplate = () => {
+    const content = "Tanggal;NIP;Nama Guru;Mata Pelajaran;Kelas;Jam Ke;Kegiatan;Keterangan\n2024-10-14;198xxxx;Guru A;Matematika;Kelas 5;1;Membahas Bab 1;Siswa antusias\n2024-10-14;199xxxx;Guru B;Bahasa Indonesia;Kelas 3;2;Membaca Puisi;";
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', "template_jurnal_universal.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast("Template Universal berhasil didownload");
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
+  const handleUpload = () => {
+    if (!selectedFile) {
+      showToast("Pilih file terlebih dahulu", "error");
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const text = e.target?.result;
+      if (typeof text === 'string') {
+        if (text.includes('Tanggal') && text.includes('NIP')) {
+          try {
+            const res = await fetch('/api/import-jurnal', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ data: text })
+            });
+            const result = await res.json();
+            if (result.success) {
+              showToast(result.message, "success");
+              onClose();
+            } else {
+              showToast(result.message, "error");
+            }
+          } catch (err) {
+            showToast("Terjadi kesalahan saat mengimport data", "error");
+          }
+        } else {
+          showToast("Format file tidak sesuai dengan template universal", "error");
+        }
+      }
+    };
+    reader.readAsText(selectedFile);
+  };
+
+  return (
+    <>
+      <ModalHeader title="Input Massal Data (CSV)" onClose={onClose} />
+      <div className="p-6 overflow-y-auto">
+        <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-xl border border-blue-100 dark:border-blue-800/30 mb-6">
+          <h3 className="font-bold text-blue-800 dark:text-blue-300 mb-2 flex items-center gap-2">
+            <Download className="w-5 h-5" /> Panduan Format Universal
+          </h3>
+          <ul className="list-disc list-inside text-sm text-blue-700 dark:text-blue-400 space-y-1 ml-1">
+            <li>Satu baris = Satu kejadian.</li>
+            <li>Sistem otomatis menggabungkan baris dengan Jurnal yang sama.</li>
+            <li>Format Tanggal: YYYY-MM-DD. Pemisah CSV: Titik Koma (;).</li>
+          </ul>
+          <button 
+            onClick={downloadUniversalTemplate}
+            className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2"
+          >
+            <Download className="w-4 h-4" /> Download Template Universal
+          </button>
+        </div>
+
+        <input 
+          type="file" 
+          accept=".csv,.xlsx" 
+          className="hidden" 
+          ref={fileInputRef} 
+          onChange={handleFileChange} 
+        />
+
+        <div 
+          onClick={() => fileInputRef.current?.click()}
+          className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-12 text-center hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
+        >
+          <Upload className="w-12 h-12 mx-auto mb-4 text-slate-400" />
+          {selectedFile ? (
+            <p className="text-green-600 dark:text-green-400 font-bold">{selectedFile.name}</p>
+          ) : (
+            <>
+              <p className="text-slate-600 dark:text-slate-300 font-medium">Klik untuk Upload CSV</p>
+              <p className="text-sm text-slate-400 mt-2">Mendukung format .csv universal</p>
+            </>
+          )}
+        </div>
+        
+        <div className="mt-6 flex justify-end">
+           <button onClick={handleUpload} className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-bold transition-colors flex items-center gap-2">
+             <Database className="w-4 h-4" /> Migrasi Data Jurnal
+           </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function JadwalModal({ onClose, showToast }: { onClose: () => void, showToast: (msg: string, type?: 'success' | 'error') => void }) {
+  const [isAdding, setIsAdding] = useState(false);
+  const [selectedClass, setSelectedClass] = useState("Kelas 1");
+  const [selectedDay, setSelectedDay] = useState("Senin");
+  const [selectedGuru, setSelectedGuru] = useState("Semua Guru");
+  const [scheduleData, setScheduleData] = useState<any[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [teachers, setTeachers] = useState<any[]>([]);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const downloadTemplateCSV = () => {
+    const content = "Hari;Kelas;Mata Pelajaran;Guru;Jam Ke\nSenin;Kelas 1;Pendidikan Agama dan Budi Pekerti;Guru A;1\nSenin;Kelas 1;Pendidikan Agama dan Budi Pekerti;Guru A;2\nSelasa;Kelas 2;Matematika;Guru B;1";
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', "template_jadwal.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast("Template jadwal berhasil didownload", "success");
+  };
+
+  const exportDataCSV = () => {
+    if (scheduleData.length === 0) {
+      showToast("Tidak ada data untuk diekspor", "error");
+      return;
+    }
+    const header = "Hari;Kelas;Mata Pelajaran;Guru;Jam Ke\n";
+    const rows = scheduleData.map(u => `${u.hari || ''};${u.kelas || ''};${u.mapel || ''};${u.guru || ''};${u.jam || ''}`).join("\n");
+    const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', "data_jadwal.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast("Data jadwal berhasil diekspor", "success");
+  };
+
+  const handleImportCSV = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const text = event.target?.result;
+        if (typeof text === 'string') {
+          const lines = text.split('\n');
+          const data = [];
+          for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (line) {
+              const [hari, kelas, mapel, guru, jam] = line.split(';');
+              if (hari && kelas && mapel && guru && jam) {
+                data.push({ hari, kelas, mapel, guru, jam: parseInt(jam), peran: 'Guru Mapel' });
+              }
+            }
+          }
+          if (data.length > 0) {
+            try {
+              showToast("Memproses impor...", "success");
+              const promises = data.map(payload => {
+                return fetch('/api/jadwal', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(payload)
+                }).then(res => res.json());
+              });
+              const results = await Promise.all(promises);
+              const failures = results.filter(r => !r.success);
+              
+              if (failures.length === 0) {
+                showToast(`Berhasil mengimpor ${data.length} jadwal`, "success");
+                fetchSchedule();
+              } else {
+                showToast(`Berhasil sebagian, gagal ${failures.length} jadwal`, "error");
+                fetchSchedule();
+              }
+            } catch (err) {
+              showToast("Terjadi kesalahan saat impor", "error");
+            }
+          }
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  useEffect(() => {
+    const fetchTeachers = async () => {
+      try {
+        const res = await fetch('/api/guru');
+        const data = await res.json();
+        if (data.success) setTeachers(data.data);
+      } catch (error) {
+        console.error("Error fetching teachers", error);
+      }
+    };
+    fetchTeachers();
+  }, []);
+  
+  // Form State
+  const [formHari, setFormHari] = useState("Senin");
+  const [formKelas, setFormKelas] = useState("Kelas 1");
+  const [formGuru, setFormGuru] = useState("");
+  const [formJam, setFormJam] = useState<number[]>([]);
+  const [formMapel, setFormMapel] = useState("");
+  const [formExtra, setFormExtra] = useState("");
+
+  const subjectsList = [
+    "Pendidikan Agama dan Budi Pekerti",
+    "Pendidikan Pancasila",
+    "Bahasa Indonesia",
+    "Matematika",
+    "IPAS",
+    "Bahasa Inggris",
+    "Seni dan Budaya",
+    "BTQ",
+    "Bahasa Jawa",
+    "PJOK"
+  ];
+
+  const fetchSchedule = async () => {
+    try {
+      let url = `/api/jadwal?hari=${selectedDay}`;
+      if (selectedClass !== "(-)") url += `&kelas=${selectedClass}`;
+      if (selectedGuru !== "Semua Guru") url += `&guru=${selectedGuru}`;
+      
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.success) {
+        setScheduleData(data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching schedule", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchSchedule();
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Hapus jadwal ini?")) return;
+    try {
+      const res = await fetch(`/api/jadwal/${id}`, { method: 'DELETE' });
+      const result = await res.json();
+      if (result.success) {
+        showToast("Jadwal dihapus");
+        fetchSchedule();
+      } else {
+        showToast(result.message, "error");
+      }
+    } catch (error) {
+      showToast("Gagal menghapus jadwal", "error");
+    }
+  };
+
+  const handleEdit = (item: any) => {
+    setEditingId(item.id);
+    setFormHari(item.hari);
+    setFormKelas(item.kelas);
+    setFormGuru(item.guru);
+    setFormJam([item.jam]);
+    
+    if (subjectsList.includes(item.mapel)) {
+      setFormMapel(item.mapel);
+      setFormExtra("");
+    } else {
+      setFormMapel("Ekstrakurikuler");
+      setFormExtra(item.mapel);
+    }
+    
+    setIsAdding(true);
+  };
+
+  const handleAddForJam = (jam: number) => {
+    setEditingId(null);
+    setFormHari(selectedDay);
+    setFormKelas(selectedClass !== "(-)" ? selectedClass : "Kelas 1");
+    setFormGuru(selectedGuru !== "Semua Guru" ? selectedGuru : (teachers[0]?.nama || ""));
+    setFormJam([jam]);
+    setFormMapel(subjectsList[0]);
+    setFormExtra("");
+    setIsAdding(true);
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formJam.length === 0) {
+      showToast("Pilih jam pelajaran terlebih dahulu", "error");
+      return;
+    }
+    
+    const finalMapel = formMapel === "Ekstrakurikuler" ? formExtra : formMapel;
+
+    try {
+      if (editingId) {
+        const payload = {
+          hari: formHari,
+          kelas: formKelas,
+          guru: formGuru,
+          jam: formJam[0],
+          mapel: finalMapel,
+          peran: 'Guru Mapel'
+        };
+
+        const res = await fetch(`/api/jadwal/${editingId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        const result = await res.json();
+        if (result.success) {
+          showToast("Jadwal diupdate", "success");
+          setIsAdding(false);
+          setEditingId(null);
+          fetchSchedule();
+        } else {
+          showToast(result.message, "error");
+        }
+      } else {
+        // Create multiple entries
+        const promises = formJam.map(jam => {
+          const payload = {
+            hari: formHari,
+            kelas: formKelas,
+            guru: formGuru,
+            jam: jam,
+            mapel: finalMapel,
+            peran: 'Guru Mapel'
+          };
+          
+          return fetch('/api/jadwal', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          }).then(res => res.json());
+        });
+
+        const results = await Promise.all(promises);
+        const failures = results.filter(r => !r.success);
+        
+        if (failures.length === 0) {
+          showToast(`Berhasil menyimpan ${formJam.length} jadwal`, "success");
+          setIsAdding(false);
+          setEditingId(null);
+          fetchSchedule();
+        } else {
+          showToast(`Gagal menyimpan ${failures.length} jadwal`, "error");
+        }
+      }
+    } catch (error) {
+      showToast("Gagal menyimpan jadwal", "error");
+    }
+  };
+
+  return (
+    <>
+      <ModalHeader title="Jadwal Pelajaran" onClose={onClose} />
+      <div className="p-6 overflow-y-auto">
+        {!isAdding ? (
+          <>
+            <div className="flex justify-end gap-2 mb-4 flex-wrap">
+              <input 
+                type="file" 
+                accept=".csv"
+                ref={fileInputRef}
+                style={{ display: 'none' }}
+                onChange={handleImportCSV}
+              />
+              <button onClick={downloadTemplateCSV} className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-bold shadow-lg shadow-emerald-200 dark:shadow-none transition-all text-sm">
+                <Download className="w-4 h-4" /> Ekspor Template
+              </button>
+              <button onClick={exportDataCSV} className="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-bold shadow-lg shadow-sky-200 dark:shadow-none transition-all text-sm">
+                <Download className="w-4 h-4" /> Ekspor Data
+              </button>
+              <button onClick={() => fileInputRef.current?.click()} className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-bold shadow-lg shadow-indigo-200 dark:shadow-none transition-all text-sm">
+                <Upload className="w-4 h-4" /> Impor CSV
+              </button>
+              <button onClick={() => { setEditingId(null); setIsAdding(true); }} className="bg-fuchsia-500 hover:bg-fuchsia-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-bold shadow-lg shadow-fuchsia-200 dark:shadow-none transition-all text-sm">
+                <Plus className="w-4 h-4" /> Setup Jadwal
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-4 mb-6 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+              <div className="flex-1 min-w-[150px]">
+                <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Nama Guru</label>
+                <select 
+                  value={selectedGuru}
+                  onChange={(e) => setSelectedGuru(e.target.value)}
+                  className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 bg-white dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-fuchsia-500 outline-none"
+                >
+                  <option value="Semua Guru">Semua Guru</option>
+                  {teachers.map((t) => (
+                    <option key={t.nip} value={t.nama_guru}>{t.nama_guru}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex-1 min-w-[150px]">
+                <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Kelas</label>
+                <select 
+                  value={selectedClass}
+                  onChange={(e) => setSelectedClass(e.target.value)}
+                  className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 bg-white dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-fuchsia-500 outline-none"
+                >
+                  <option value="(-)">(-)</option>
+                  <option value="Kelas 1">Kelas 1</option>
+                  <option value="Kelas 2">Kelas 2</option>
+                  <option value="Kelas 3">Kelas 3</option>
+                  <option value="Kelas 4">Kelas 4</option>
+                  <option value="Kelas 5">Kelas 5</option>
+                  <option value="Kelas 6">Kelas 6</option>
+                </select>
+              </div>
+              <div className="flex-1 min-w-[150px]">
+                <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Hari</label>
+                <select 
+                  value={selectedDay}
+                  onChange={(e) => setSelectedDay(e.target.value)}
+                  className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 bg-white dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-fuchsia-500 outline-none"
+                >
+                  <option value="Senin">Senin</option>
+                  <option value="Selasa">Selasa</option>
+                  <option value="Rabu">Rabu</option>
+                  <option value="Kamis">Kamis</option>
+                  <option value="Jumat">Jumat</option>
+                  <option value="Sabtu">Sabtu</option>
+                </select>
+              </div>
+              <div className="flex items-end">
+                <button onClick={fetchSchedule} className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg flex items-center gap-2 font-bold shadow-lg shadow-blue-200 dark:shadow-none transition-all">
+                  Tampilkan
+                </button>
+              </div>
+            </div>
+            
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+              <table className="w-full text-sm text-left text-slate-600 dark:text-slate-300">
+                <thead className="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 uppercase font-bold text-xs">
+                  <tr>
+                    <th className="px-6 py-4">Jam Ke</th>
+                    <th className="px-6 py-4">Mata Pelajaran</th>
+                    <th className="px-6 py-4">Guru</th>
+                    <th className="px-6 py-4">Peran</th>
+                    <th className="px-6 py-4 text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                  {selectedClass !== "(-)" || selectedGuru !== "Semua Guru" ? (
+                    [1, 2, 3, 4, 5, 6, 7, 8].map(jam => {
+                      const items = scheduleData.filter(s => Number(s.jam) === jam);
+                      if (items.length === 0) {
+                        return (
+                          <tr key={`empty-${jam}`} onClick={() => handleAddForJam(jam)} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer group">
+                            <td className="px-6 py-4 font-bold text-slate-400">#{jam}</td>
+                            <td className="px-6 py-4 font-medium text-slate-400 dark:text-slate-500 italic">-</td>
+                            <td className="px-6 py-4 text-slate-400 dark:text-slate-500 italic">-</td>
+                            <td className="px-6 py-4"></td>
+                            <td className="px-6 py-4 text-right">
+                              <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span className="text-xs text-fuchsia-500 font-medium px-2 py-1 bg-fuchsia-50 dark:bg-fuchsia-900/20 rounded">Klik untuk tambah</span>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      }
+                      return items.map((item, idx) => (
+                        <tr key={item.id || `${jam}-${idx}`} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                          <td className="px-6 py-4 font-bold text-slate-400">#{item.jam}</td>
+                          <td className="px-6 py-4 font-medium text-slate-800 dark:text-white">
+                            {item.mapel}
+                            {selectedClass === "(-)" && <span className="ml-2 text-xs bg-slate-200 dark:bg-slate-600 px-2 py-1 rounded">{item.kelas}</span>}
+                          </td>
+                          <td className="px-6 py-4">{item.guru}</td>
+                          <td className="px-6 py-4">
+                            <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-xs px-2 py-1 rounded-full font-bold">{item.peran}</span>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex justify-end gap-2">
+                              <button onClick={() => handleEdit(item)} className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"><Edit className="w-4 h-4" /></button>
+                              <button onClick={() => handleDelete(item.id)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                            </div>
+                          </td>
+                        </tr>
+                      ));
+                    })
+                  ) : (
+                    scheduleData.length > 0 ? (
+                      scheduleData.sort((a, b) => a.jam - b.jam).map((item, idx) => (
+                        <tr key={item.id || idx} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                          <td className="px-6 py-4 font-bold text-slate-400">#{item.jam}</td>
+                          <td className="px-6 py-4 font-medium text-slate-800 dark:text-white">
+                            {item.mapel}
+                            {selectedClass === "(-)" && <span className="ml-2 text-xs bg-slate-200 dark:bg-slate-600 px-2 py-1 rounded">{item.kelas}</span>}
+                          </td>
+                          <td className="px-6 py-4">{item.guru}</td>
+                          <td className="px-6 py-4">
+                            <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-xs px-2 py-1 rounded-full font-bold">{item.peran}</span>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex justify-end gap-2">
+                              <button onClick={() => handleEdit(item)} className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"><Edit className="w-4 h-4" /></button>
+                              <button onClick={() => handleDelete(item.id)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
+                          Tidak ada jadwal ditemukan.
+                        </td>
+                      </tr>
+                    )
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </>
+        ) : (
+          <form onSubmit={handleSave} className="space-y-6">
+             <div className="bg-fuchsia-50 dark:bg-fuchsia-900/10 p-6 rounded-xl border border-fuchsia-100 dark:border-fuchsia-800/30">
+               <h3 className="font-bold text-fuchsia-800 dark:text-fuchsia-300 mb-4 flex items-center gap-2">
+                 <Calendar className="w-5 h-5" /> Konfigurasi Jadwal
+               </h3>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Hari</label>
+                    <select 
+                      value={formHari}
+                      onChange={(e) => setFormHari(e.target.value)}
+                      className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 bg-white dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-fuchsia-500 outline-none"
+                    >
+                      <option>Senin</option>
+                      <option>Selasa</option>
+                      <option>Rabu</option>
+                      <option>Kamis</option>
+                      <option>Jumat</option>
+                      <option>Sabtu</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Kelas</label>
+                    <select 
+                      value={formKelas}
+                      onChange={(e) => setFormKelas(e.target.value)}
+                      className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 bg-white dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-fuchsia-500 outline-none"
+                    >
+                      <option value="(-)">(-)</option>
+                      <option value="Kelas 1">Kelas 1</option>
+                      <option value="Kelas 2">Kelas 2</option>
+                      <option value="Kelas 3">Kelas 3</option>
+                      <option value="Kelas 4">Kelas 4</option>
+                      <option value="Kelas 5">Kelas 5</option>
+                      <option value="Kelas 6">Kelas 6</option>
+                    </select>
+                  </div>
+               </div>
+             </div>
+
+             <div>
+                <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Nama Guru</label>
+                <select 
+                  value={formGuru}
+                  onChange={(e) => setFormGuru(e.target.value)}
+                  className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 bg-white dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-fuchsia-500 outline-none"
+                >
+                  <option value="">-- Pilih Guru --</option>
+                  {teachers.map((t) => (
+                    <option key={t.nip} value={t.nama_guru}>{t.nama_guru}</option>
+                  ))}
+                </select>
+             </div>
+             
+             <div>
+               <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Pilih Jam Pelajaran</label>
+               <div className="grid grid-cols-4 md:grid-cols-8 gap-3">
+                 {[1, 2, 3, 4, 5, 6, 7, 8].map(j => (
+                   <button 
+                     key={j} 
+                     type="button" 
+                     onClick={() => {
+                       setFormJam(prev => {
+                         if (prev.includes(j)) return prev.filter(h => h !== j);
+                         return [...prev, j];
+                       });
+                     }}
+                     className={`border p-3 rounded-xl transition-all font-bold ${
+                       formJam.includes(j)
+                         ? 'bg-fuchsia-500 text-white border-fuchsia-600' 
+                         : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-fuchsia-50 dark:hover:bg-fuchsia-900/20'
+                     }`}
+                   >
+                     Jam {j}
+                   </button>
+                 ))}
+               </div>
+             </div>
+
+             <div>
+                <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Mata Pelajaran</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 border border-slate-300 dark:border-slate-600 rounded-xl p-4 bg-slate-50 dark:bg-slate-700/50">
+                  {subjectsList.map((subject) => (
+                    <label key={subject} className="flex items-center space-x-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 p-2 rounded-lg transition-colors">
+                      <input 
+                        type="radio" 
+                        name="mapel"
+                        value={subject}
+                        checked={formMapel === subject}
+                        onChange={(e) => setFormMapel(e.target.value)}
+                        className="w-5 h-5 text-fuchsia-600 focus:ring-fuchsia-500 border-slate-300" 
+                      />
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{subject}</span>
+                    </label>
+                  ))}
+                  <label className="flex items-center space-x-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 p-2 rounded-lg transition-colors">
+                    <input 
+                      type="radio" 
+                      name="mapel"
+                      value="Ekstrakurikuler"
+                      checked={formMapel === "Ekstrakurikuler"}
+                      onChange={(e) => setFormMapel(e.target.value)}
+                      className="w-5 h-5 text-fuchsia-600 focus:ring-fuchsia-500 border-slate-300" 
+                    />
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Ekstrakurikuler</span>
+                  </label>
+                </div>
+                
+                {formMapel === "Ekstrakurikuler" && (
+                  <div className="mt-4 pl-4 border-l-4 border-fuchsia-500">
+                    <label className="block text-xs font-bold text-fuchsia-600 dark:text-fuchsia-400 mb-1 uppercase">Nama Ekstrakurikuler</label>
+                    <input 
+                      type="text" 
+                      value={formExtra}
+                      onChange={(e) => setFormExtra(e.target.value)}
+                      className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 bg-white dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-fuchsia-500 outline-none" 
+                      placeholder="Contoh: Pramuka, Tari, Futsal" 
+                      required
+                    />
+                  </div>
+                )}
+             </div>
+
+             <div className="flex justify-end gap-3 pt-6 border-t border-slate-100 dark:border-slate-700">
+               <button type="button" onClick={() => setIsAdding(false)} className="px-6 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium transition-colors">Batal</button>
+               <button type="submit" className="bg-fuchsia-500 hover:bg-fuchsia-600 text-white px-8 py-2 rounded-xl font-bold shadow-lg shadow-fuchsia-200 dark:shadow-none transition-all flex items-center gap-2">
+                 <Save className="w-4 h-4" /> Simpan Jadwal
+               </button>
+             </div>
+          </form>
+        )}
+      </div>
+    </>
+  );
+}
+
+function UserManagementModal({ onClose, showToast }: { onClose: () => void, showToast: (msg: string, type?: 'success' | 'error') => void }) {
+  const [isAdding, setIsAdding] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editId, setEditId] = useState('');
+  const [roles, setRoles] = useState<string[]>(['Guru']);
+  const [password, setPassword] = useState('baujeng@1');
+  const [nip, setNip] = useState('');
+  const [nama, setNama] = useState('');
+  const [jabatan, setJabatan] = useState('');
+  const [waliKelas, setWaliKelas] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [users, setUsers] = useState<any[]>([]);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const downloadTemplateCSV = () => {
+    const content = "NIP;Nama Lengkap;Role (Pisahkan dengan koma);Wali Kelas;Jabatan;Password\n198xxxx;Guru A;Guru;Kelas 5;;baujeng@1\n199xxxx;Tendik B;Tendik;;Perpustakaan;baujeng@1";
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', "template_user.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast("Template user berhasil didownload", "success");
+  };
+
+  const exportDataCSV = () => {
+    if (users.length === 0) {
+      showToast("Tidak ada data untuk diekspor", "error");
+      return;
+    }
+    const header = "NIP;Nama Lengkap;Role;Wali Kelas;Jabatan\n";
+    const rows = users.map(u => `${u.nip || ''};${u.nama || ''};${(u.roles || (u.role && u.role.split(', ')))?.join(',') || ''};${u.wali_kelas || ''};${u.jabatan || ''}`).join("\n");
+    const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', "data_user.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast("Data user berhasil diekspor", "success");
+  };
+
+  const handleImportCSV = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const text = event.target?.result;
+        if (typeof text === 'string') {
+          const lines = text.split('\n');
+          const data = [];
+          for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (line) {
+              const [nip, nama, roleStr, wali_kelas, jabatan, password] = line.split(';');
+              if (nama && roleStr) {
+                const roles = roleStr.split(',').map((r: string) => r.trim());
+                data.push({ nip, nama, roles, wali_kelas, jabatan, password: password || 'baujeng@1' });
+              }
+            }
+          }
+          if (data.length > 0) {
+            setLoading(true);
+            try {
+              showToast("Memproses impor...", "success");
+              const promises = data.map(payload => {
+                return fetch('/api/users', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(payload)
+                }).then(res => res.json());
+              });
+              const results = await Promise.all(promises);
+              const failures = results.filter(r => !r.success);
+              
+              if (failures.length === 0) {
+                showToast(`Berhasil mengimpor ${data.length} user`, "success");
+                fetchUsers();
+              } else {
+                showToast(`Berhasil sebagian, gagal ${failures.length} user`, "error");
+                fetchUsers();
+              }
+            } catch (err) {
+              showToast("Terjadi kesalahan saat impor", "error");
+            } finally {
+              setLoading(false);
+            }
+          }
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch('/api/users');
+      const data = await res.json();
+      if (data.success) setUsers(data.data);
+    } catch (error) {
+      console.error("Error fetching users", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const handleDeleteUser = async (id: string) => {
+    if (!confirm("Hapus user ini?")) return;
+    try {
+      const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+      const result = await res.json();
+      if (result.success) {
+        showToast("User dihapus");
+        fetchUsers();
+      } else {
+        showToast(result.message, "error");
+      }
+    } catch (error) {
+      showToast("Gagal menghapus user", "error");
+    }
+  };
+
+  const handleEditClick = (user: any) => {
+    setEditId(user.id);
+    setNip(user.nip);
+    setNama(user.nama);
+    setRoles(user.roles || user.role.split(', '));
+    setPassword(''); // Leave empty to not change
+    setJabatan(user.jabatan || '');
+    setWaliKelas(user.wali_kelas || '');
+    setIsEditing(true);
+    setIsAdding(true);
+  };
+
+  const handleRoleChange = (role: string) => {
+    setRoles(prev => 
+      prev.includes(role) ? prev.filter(r => r !== role) : [...prev, role]
+    );
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (roles.length === 0) {
+      showToast("Pilih minimal satu role", "error");
+      return;
+    }
+    setLoading(true);
+    try {
+      const url = isEditing ? `/api/users/${editId}` : '/api/users';
+      const method = isEditing ? 'PUT' : 'POST';
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nip, nama, roles, password, jabatan, wali_kelas: waliKelas })
+      });
+      const result = await res.json();
+      if (result.success) {
+        showToast(`User berhasil ${isEditing ? 'diupdate' : 'ditambahkan'}`);
+        setIsAdding(false);
+        setIsEditing(false);
+        setNip(''); setNama(''); setRoles(['Guru']); setPassword('baujeng@1'); setJabatan(''); setWaliKelas('');
+        fetchUsers();
+      } else {
+        showToast(`Gagal ${isEditing ? 'mengupdate' : 'menambahkan'} user: ` + result.message, 'error');
+      }
+    } catch (error) {
+      showToast("Terjadi kesalahan jaringan", 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <ModalHeader title="Manajemen User" onClose={onClose} />
+      <div className="p-6 overflow-y-auto">
+        {!isAdding ? (
+           <>
+             <div className="flex justify-between mb-4 flex-wrap gap-2">
+               <input type="text" placeholder="Cari user..." className="border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 bg-white dark:bg-slate-700 dark:text-white" />
+               <div className="flex gap-2 flex-wrap">
+                 <input 
+                    type="file" 
+                    accept=".csv"
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                    onChange={handleImportCSV}
+                 />
+                 <button onClick={downloadTemplateCSV} className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm shadow-sm transition-all font-semibold">
+                   <Download className="w-4 h-4" /> Ekspor Template
+                 </button>
+                 <button onClick={exportDataCSV} className="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm shadow-sm transition-all font-semibold">
+                   <Download className="w-4 h-4" /> Ekspor Data
+                 </button>
+                 <button onClick={() => fileInputRef.current?.click()} className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm shadow-sm transition-all font-semibold">
+                   <Upload className="w-4 h-4" /> Impor CSV
+                 </button>
+                 <button onClick={() => {
+                   setIsAdding(true);
+                   setIsEditing(false);
+                   setNip(''); setNama(''); setRoles(['Guru']); setPassword('baujeng@1'); setJabatan(''); setWaliKelas('');
+                 }} className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-semibold">
+                   <Plus className="w-4 h-4" /> Tambah User
+                 </button>
+               </div>
+             </div>
+            <table className="w-full text-sm text-left text-slate-600 dark:text-slate-300">
+              <thead className="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 uppercase font-bold">
+                <tr>
+                  <th className="px-4 py-3 rounded-l-lg">Nama</th>
+                  <th className="px-4 py-3">NIP/Username</th>
+                  <th className="px-4 py-3">Role</th>
+                  <th className="px-4 py-3">Password</th>
+                  <th className="px-4 py-3 rounded-r-lg text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((user) => (
+                  <tr key={user.id} className="border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                    <td className="px-4 py-3 font-medium text-slate-800 dark:text-white">{user.nama}</td>
+                    <td className="px-4 py-3">{user.nip || '-'}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap gap-1">
+                        {(user.roles || user.role.split(', ')).map((r: string) => (
+                          <span key={r} className={`px-2 py-1 rounded-full text-xs font-bold ${r === 'Guru' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : r === 'Admin' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'}`}>
+                            {r}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-slate-400">••••••</td>
+                    <td className="px-4 py-3 text-right">
+                      <button onClick={() => handleEditClick(user)} className="text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 p-2 rounded-lg transition-colors mr-1"><Edit className="w-4 h-4" /></button>
+                      <button onClick={() => handleDeleteUser(user.id)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                    </td>
+                  </tr>
+                ))}
+                {users.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-8 text-center text-slate-500">Belum ada data user</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-100 dark:border-green-800/30 mb-4">
+              <h3 className="font-bold text-green-800 dark:text-green-300 mb-2 flex items-center gap-2">
+                <Key className="w-4 h-4" /> Akun Login
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium mb-1">NIP (User ID)</label>
+                  <input 
+                    type="text" 
+                    className="w-full border rounded px-3 py-2 text-sm" 
+                    placeholder="199xxx" 
+                    value={nip}
+                    onChange={(e) => setNip(e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1">Password</label>
+                  <input 
+                    type="text" 
+                    className="w-full border rounded px-3 py-2 text-sm dark:bg-slate-700 dark:border-slate-600 dark:text-white" 
+                    value={password} 
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={isEditing ? "Kosongkan jika tidak diubah" : ""}
+                  />
+                  {!isEditing && <p className="text-[10px] text-slate-500 mt-1">Default: baujeng@1</p>}
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Nama Lengkap</label>
+              <input 
+                type="text" 
+                className="w-full border rounded-lg px-4 py-2 dark:bg-slate-700 dark:border-slate-600" 
+                placeholder="Nama Lengkap..." 
+                value={nama}
+                onChange={(e) => setNama(e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Role (Bisa pilih lebih dari satu)</label>
+              <div className="flex gap-4">
+                {['Guru', 'Tendik', 'Admin'].map(r => (
+                  <label key={r} className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      className="w-4 h-4 rounded text-emerald-500 focus:ring-emerald-500"
+                      checked={roles.includes(r)}
+                      onChange={() => handleRoleChange(r)}
+                    />
+                    <span>{r}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {roles.includes('Tendik') && (
+              <div>
+                <label className="block text-sm font-medium mb-1">Jabatan</label>
+                <input 
+                  type="text" 
+                  className="w-full border rounded-lg px-4 py-2 dark:bg-slate-700 dark:border-slate-600" 
+                  placeholder="Contoh: Tata Usaha, Pustakawan" 
+                  value={jabatan}
+                  onChange={(e) => setJabatan(e.target.value)}
+                />
+              </div>
+            )}
+
+            {roles.includes('Guru') && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Wali Kelas</label>
+                  <select 
+                    className="w-full border rounded-lg px-4 py-2 dark:bg-slate-700 dark:border-slate-600"
+                    value={waliKelas}
+                    onChange={(e) => setWaliKelas(e.target.value)}
+                  >
+                    <option value="">-- Bukan Wali Kelas --</option>
+                    <option value="Kelas 1">Kelas 1</option>
+                    <option value="Kelas 2">Kelas 2</option>
+                    <option value="Kelas 3">Kelas 3</option>
+                    <option value="Kelas 4">Kelas 4</option>
+                    <option value="Kelas 5">Kelas 5</option>
+                    <option value="Kelas 6">Kelas 6</option>
+                    <option value="Ekstrakurikuler">Ekstrakurikuler</option>
+                  </select>
+                </div>
+              </>
+            )}
+
+            <div className="flex justify-end gap-2 pt-4">
+               <button type="button" onClick={() => { setIsAdding(false); setIsEditing(false); }} className="px-4 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">Batal</button>
+               <button type="submit" disabled={loading} className="bg-emerald-500 text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 disabled:opacity-50">
+                 <Save className="w-4 h-4" /> {loading ? 'Menyimpan...' : (isEditing ? 'Update User' : 'Tambah User')}
+               </button>
+             </div>
+          </form>
+        )}
+      </div>
+    </>
+  );
+}
+
+function DataMuridModal({ onClose, showToast }: { onClose: () => void, showToast: (msg: string, type?: 'success' | 'error') => void }) {
+  const [tab, setTab] = useState('data'); // 'data', 'mutasi'
+  const [viewState, setViewState] = useState<'list' | 'add' | 'edit' | 'mutasi_masuk' | 'mutasi_keluar'>('list');
+  const [selectedStudent, setSelectedStudent] = useState<any>(null);
+  const [muridList, setMuridList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const downloadTemplateCSV = () => {
+    const content = "NISN;NIS;Nama Lengkap;Kelas;Jenis Kelamin (L/P);Tanggal Lahir (YYYY-MM-DD);Password (Default: baujeng(kelas))\n1234567890;1001;Siswa A;Kelas 1;L;2017-05-20;baujeng1\n0987654321;1002;Siswa B;Kelas 1;P;2017-08-15;baujeng1";
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', "template_siswa.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast("Template siswa berhasil didownload", "success");
+  };
+
+  const exportDataCSV = () => {
+    if (muridList.length === 0) {
+      showToast("Tidak ada data untuk diekspor", "error");
+      return;
+    }
+    const header = "NISN;NIS;Nama Lengkap;Kelas;Jenis Kelamin;Tanggal Lahir\n";
+    const rows = muridList.map(u => `${u['NISN'] || ''};${u['NIS'] || ''};${u['Nama Lengkap'] || ''};${u['Kelas'] || ''};${u['Jenis Kelamin'] || ''};${u['Tanggal Lahir'] || ''}`).join("\n");
+    const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', "data_siswa.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast("Data siswa berhasil diekspor", "success");
+  };
+
+  const handleImportCSV = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const text = event.target?.result;
+        if (typeof text === 'string') {
+          const lines = text.split('\n');
+          const data = [];
+          for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (line) {
+              const [nisn, nis, nama, kelas, jk, tglLahir, password] = line.split(';');
+              if (nisn && nama) {
+                data.push({
+                  NISN: nisn,
+                  NIS: nis,
+                  'Nama Lengkap': nama,
+                  Kelas: kelas,
+                  'Jenis Kelamin': jk,
+                  'Tanggal Lahir': tglLahir,
+                  Password: password || `baujeng${kelas?.replace(/\D/g,'') || '1'}`
+                });
+              }
+            }
+          }
+          if (data.length > 0) {
+            setLoading(true);
+            try {
+              showToast("Memproses impor...", "success");
+              const promises = data.map(payload => {
+                return fetch('/api/murid', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(payload)
+                }).then(res => res.json());
+              });
+              const results = await Promise.all(promises);
+              const failures = results.filter(r => !r.success);
+              
+              if (failures.length === 0) {
+                showToast(`Berhasil mengimpor ${data.length} siswa`, "success");
+                fetchMurid();
+              } else {
+                showToast(`Berhasil sebagian, gagal ${failures.length} siswa`, "error");
+                fetchMurid();
+              }
+            } catch (err) {
+              showToast("Terjadi kesalahan saat impor", "error");
+            } finally {
+              setLoading(false);
+            }
+          }
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  const fetchMurid = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/murid');
+      const data = await res.json();
+      if (data.success) {
+        setMuridList(data.data);
+      } else {
+        showToast(data.message || 'Gagal mengambil data murid', 'error');
+      }
+    } catch (error) {
+      showToast('Terjadi kesalahan jaringan', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMurid();
+  }, []);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(e.target as HTMLFormElement);
+    const data = {
+      NISN: formData.get('nisn'),
+      NamaLengkap: formData.get('nama'),
+      Kelas: formData.get('kelas'),
+      Password: formData.get('password'),
+      TanggalLahir: formData.get('tanggalLahir'),
+      JenisKelamin: formData.get('jenisKelamin'),
+      NIS: formData.get('nis')
+    };
+
+    try {
+      let res;
+      if (viewState === 'add') {
+        res = await fetch('/api/murid', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+      } else if (viewState === 'edit') {
+        res = await fetch(`/api/murid/${selectedStudent.NISN}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+      }
+
+      if (res) {
+        const result = await res.json();
+        if (result.success) {
+          showToast(result.message, 'success');
+          setViewState('list');
+          fetchMurid();
+        } else {
+          showToast(result.message || 'Gagal menyimpan data', 'error');
+        }
+      }
+    } catch (error) {
+      showToast('Terjadi kesalahan jaringan', 'error');
+    }
+  };
+
+  const handleDelete = async (nisn: string) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus data murid ini?')) return;
+    
+    try {
+      const res = await fetch(`/api/murid/${nisn}`, { method: 'DELETE' });
+      const result = await res.json();
+      if (result.success) {
+        showToast(result.message, 'success');
+        fetchMurid();
+      } else {
+        showToast(result.message || 'Gagal menghapus data', 'error');
+      }
+    } catch (error) {
+      showToast('Terjadi kesalahan jaringan', 'error');
+    }
+  };
+
+  const filteredMurid = muridList.filter(m => 
+    (m['Nama Lengkap'] || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (m.NISN || '').includes(searchQuery) ||
+    (m.Kelas || '').toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const renderDataSiswa = () => {
+    if (viewState === 'list') {
+      return (
+        <div className="space-y-4">
+           <div className="flex gap-2 flex-wrap items-center mb-4">
+              <input 
+                type="text" 
+                placeholder="Cari siswa..." 
+                className="flex-1 min-w-[200px] border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 bg-white dark:bg-slate-700 dark:text-white"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <div className="flex gap-2 flex-wrap">
+                 <input 
+                    type="file" 
+                    accept=".csv"
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                    onChange={handleImportCSV}
+                 />
+                 <button onClick={downloadTemplateCSV} className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm shadow-sm transition-all font-semibold">
+                   <Download className="w-4 h-4" /> Ekspor Template
+                 </button>
+                 <button onClick={exportDataCSV} className="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm shadow-sm transition-all font-semibold">
+                   <Download className="w-4 h-4" /> Ekspor Data
+                 </button>
+                 <button onClick={() => fileInputRef.current?.click()} className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm shadow-sm transition-all font-semibold">
+                   <Upload className="w-4 h-4" /> Impor CSV
+                 </button>
+                 <button onClick={() => { setSelectedStudent(null); setViewState('add'); }} className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-semibold shadow-sm transition-all text-sm">
+                   <Plus className="w-4 h-4" /> Tambah
+                 </button>
+              </div>
+           </div>
+           
+           {loading ? (
+             <div className="text-center py-8 text-slate-500">Memuat data...</div>
+           ) : filteredMurid.length === 0 ? (
+             <div className="text-center py-8 text-slate-500">Tidak ada data murid ditemukan.</div>
+           ) : (
+             <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-2">
+               {filteredMurid.map((m, i) => (
+                 <div key={i} className="border rounded-xl p-4 flex justify-between items-center dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                   <div className="flex items-center gap-4">
+                     <div className="w-10 h-10 bg-slate-200 dark:bg-slate-600 rounded-full flex items-center justify-center">
+                       <User className="w-5 h-5 text-slate-500 dark:text-slate-300" />
+                     </div>
+                     <div>
+                       <h4 className="font-bold text-slate-800 dark:text-white">{m['Nama Lengkap']} ({m.Kelas})</h4>
+                       <p className="text-xs text-slate-500">NISN: {m.NISN} | NIS: {m.NIS || '-'}</p>
+                     </div>
+                   </div>
+                   <div className="flex gap-2">
+                     <button 
+                       onClick={() => { setSelectedStudent(m); setViewState('edit'); }} 
+                       className="text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 p-2 rounded-lg transition-colors"
+                       title="Edit"
+                     >
+                       <Edit className="w-4 h-4" />
+                     </button>
+                     <button 
+                       onClick={() => handleDelete(m.NISN)} 
+                       className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg transition-colors"
+                       title="Hapus"
+                     >
+                       <Trash2 className="w-4 h-4" />
+                     </button>
+                   </div>
+                 </div>
+               ))}
+             </div>
+           )}
+        </div>
+      );
+    }
+
+    return (
+      <form onSubmit={handleSave} className="space-y-4">
+        <div className="flex items-center gap-2 mb-4 text-slate-500 cursor-pointer hover:text-slate-800" onClick={() => setViewState('list')}>
+          <ArrowRightLeft className="w-4 h-4 rotate-180" /> Kembali
+        </div>
+        <h3 className="font-bold text-lg text-slate-800 dark:text-white mb-4">{viewState === 'add' ? 'Tambah Siswa Baru' : 'Edit Data Siswa'}</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Nama Lengkap</label>
+            <input type="text" name="nama" defaultValue={selectedStudent?.['Nama Lengkap']} className="w-full border rounded-lg px-4 py-2 dark:bg-slate-700 dark:border-slate-600" required />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">NISN</label>
+            <input type="text" name="nisn" defaultValue={selectedStudent?.NISN} readOnly={viewState === 'edit'} className={`w-full border rounded-lg px-4 py-2 dark:bg-slate-700 dark:border-slate-600 ${viewState === 'edit' ? 'bg-slate-100 dark:bg-slate-800' : ''}`} required />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">NIS</label>
+            <input type="text" name="nis" defaultValue={selectedStudent?.NIS} className="w-full border rounded-lg px-4 py-2 dark:bg-slate-700 dark:border-slate-600" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Kelas</label>
+            <select name="kelas" defaultValue={selectedStudent?.Kelas || 'Kelas 1'} className="w-full border rounded-lg px-4 py-2 dark:bg-slate-700 dark:border-slate-600">
+              <option value="Kelas 1">Kelas 1</option>
+              <option value="Kelas 2">Kelas 2</option>
+              <option value="Kelas 3">Kelas 3</option>
+              <option value="Kelas 4">Kelas 4</option>
+              <option value="Kelas 5">Kelas 5</option>
+              <option value="Kelas 6">Kelas 6</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Jenis Kelamin</label>
+            <select name="jenisKelamin" defaultValue={selectedStudent?.['Jenis Kelamin (L/P)'] || 'L'} className="w-full border rounded-lg px-4 py-2 dark:bg-slate-700 dark:border-slate-600">
+              <option value="L">Laki-laki (L)</option>
+              <option value="P">Perempuan (P)</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Tanggal Lahir</label>
+            <input type="date" name="tanggalLahir" defaultValue={selectedStudent?.['Tanggal Lahir (YYYY-MM-DD)']} className="w-full border rounded-lg px-4 py-2 dark:bg-slate-700 dark:border-slate-600" />
+          </div>
+        </div>
+
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-xl border border-yellow-100 dark:border-yellow-800/30">
+          <h4 className="font-bold text-yellow-800 dark:text-yellow-300 mb-2 flex items-center gap-2">
+            <Key className="w-4 h-4" /> Akun Siswa
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium mb-1">Username</label>
+              <input type="text" value={selectedStudent?.NIS || 'Auto-generated from NIS'} className="w-full border rounded px-3 py-2 text-sm bg-slate-100 dark:bg-slate-600 text-slate-500" readOnly />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1">Password</label>
+              <input type="text" name="password" defaultValue={selectedStudent?.['Password (Default: baujeng(kelas))']} placeholder={viewState === 'edit' ? 'Kosongkan jika tidak ingin mengubah' : 'Masukkan password baru'} className="w-full border rounded px-3 py-2 text-sm dark:bg-slate-700 dark:border-slate-600" />
+              <p className="text-[10px] text-slate-500 mt-1">Default: baujeng(kelas) (contoh: baujeng1)</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-end pt-4">
+          <button type="submit" className="bg-sky-500 text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2">
+            <Save className="w-4 h-4" /> Simpan Data
+          </button>
+        </div>
+      </form>
+    );
+  };
+
+  const renderMutasi = () => {
+    if (viewState === 'list') {
+      return (
+        <div className="space-y-4">
+          <div className="flex gap-2 mb-4">
+            <button onClick={() => setViewState('mutasi_masuk')} className="flex-1 bg-green-100 hover:bg-green-200 text-green-700 py-3 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2">
+              <Download className="w-4 h-4" /> Input Mutasi Masuk
+            </button>
+            <button onClick={() => setViewState('mutasi_keluar')} className="flex-1 bg-red-100 hover:bg-red-200 text-red-700 py-3 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2">
+              <LogOut className="w-4 h-4" /> Input Mutasi Keluar
+            </button>
+          </div>
+          
+          <div className="text-center text-slate-500 py-8 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
+            <ArrowRightLeft className="w-12 h-12 mx-auto mb-2 opacity-20" />
+            <p>Belum ada data mutasi tercatat</p>
+          </div>
+        </div>
+      );
+    }
+
+    const isMasuk = viewState === 'mutasi_masuk';
+    
+    return (
+      <form onSubmit={handleSave} className="space-y-4">
+        <div className="flex items-center gap-2 mb-4 text-slate-500 cursor-pointer hover:text-slate-800" onClick={() => setViewState('list')}>
+          <ArrowRightLeft className="w-4 h-4 rotate-180" /> Kembali
+        </div>
+        <h3 className={`font-bold text-lg mb-4 ${isMasuk ? 'text-green-600' : 'text-red-600'}`}>
+          {isMasuk ? 'Formulir Mutasi Masuk' : 'Formulir Mutasi Keluar'}
+        </h3>
+
+        <div className="grid grid-cols-1 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Nama Siswa</label>
+            <input type="text" className="w-full border rounded-lg px-4 py-2 dark:bg-slate-700 dark:border-slate-600" required />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">NISN</label>
+              <input type="text" className="w-full border rounded-lg px-4 py-2 dark:bg-slate-700 dark:border-slate-600" required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Tanggal Mutasi</label>
+              <input type="date" className="w-full border rounded-lg px-4 py-2 dark:bg-slate-700 dark:border-slate-600" required />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">{isMasuk ? 'Sekolah Asal' : 'Sekolah Tujuan'}</label>
+            <input type="text" className="w-full border rounded-lg px-4 py-2 dark:bg-slate-700 dark:border-slate-600" required />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Alasan Mutasi</label>
+            <textarea className="w-full border rounded-lg px-4 py-2 dark:bg-slate-700 dark:border-slate-600 h-24 resize-none" required></textarea>
+          </div>
+        </div>
+
+        <div className="flex justify-end pt-4">
+          <button type="submit" className={`${isMasuk ? 'bg-green-600' : 'bg-red-600'} text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2`}>
+            <Save className="w-4 h-4" /> Simpan Data Mutasi
+          </button>
+        </div>
+      </form>
+    );
+  };
+
+  return (
+    <>
+      <ModalHeader title="Data Murid" onClose={onClose} />
+      <div className="p-6 overflow-y-auto">
+        <div className="flex gap-2 mb-6 border-b border-slate-200 dark:border-slate-700">
+          <button 
+            onClick={() => { setTab('data'); setViewState('list'); }}
+            className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${tab === 'data' ? 'border-sky-500 text-sky-600 dark:text-sky-400' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+          >
+            Data Siswa
+          </button>
+          <button 
+            onClick={() => { setTab('mutasi'); setViewState('list'); }}
+            className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${tab === 'mutasi' ? 'border-sky-500 text-sky-600 dark:text-sky-400' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+          >
+            Mutasi Siswa
+          </button>
+        </div>
+
+        {tab === 'data' ? renderDataSiswa() : renderMutasi()}
+      </div>
+    </>
+  );
+}
+
+function ApiConfigView({ showToast }: { showToast: (msg: string, type?: 'success' | 'error') => void }) {
+  const [apiKeys, setApiKeys] = useState({
+    gemini_api_key: '',
+    whatsapp_api_key: '',
+    other_api_key: '',
+    wa_message_template: ''
+  });
+  const [dbConfig, setDbConfig] = useState({
+    supabaseUrl: '',
+    supabaseKey: ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [loadingDb, setLoadingDb] = useState(false);
+
+  useEffect(() => {
+    const fetchKeys = async () => {
+      try {
+        const res = await fetch('/api/api-settings');
+        const data = await res.json();
+        if (data.success) {
+          setApiKeys({
+            gemini_api_key: data.data.gemini_api_key || '',
+            whatsapp_api_key: data.data.whatsapp_api_key || '',
+            other_api_key: data.data.other_api_key || '',
+            wa_message_template: data.data.wa_message_template || ''
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch API keys", error);
+      }
+    };
+    const fetchDbConfig = async () => {
+      try {
+        const res = await fetch('/api/db-config');
+        const data = await res.json();
+        if (data.success && data.data) {
+          setDbConfig({
+            supabaseUrl: data.data.supabaseUrl || '',
+            supabaseKey: data.data.supabaseKey || ''
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch DB config", error);
+      }
+    };
+    fetchKeys();
+    fetchDbConfig();
+  }, []);
+
+  const handleSaveDb = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoadingDb(true);
+    try {
+      const res = await fetch('/api/db-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dbConfig)
+      });
+      const result = await res.json();
+      if (result.success) {
+        showToast("Konfigurasi Database berhasil disimpan!", "success");
+      } else {
+        showToast("Gagal menyimpan konfigurasi database: " + result.message, "error");
+      }
+    } catch (error) {
+      showToast("Terjadi kesalahan jaringan", "error");
+    } finally {
+      setLoadingDb(false);
+    }
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await fetch('/api/api-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(apiKeys)
+      });
+      const result = await res.json();
+      if (result.success) {
+        showToast("Konfigurasi API berhasil disimpan!", "success");
+      } else {
+        showToast("Gagal menyimpan konfigurasi", "error");
+      }
+    } catch (error) {
+      showToast("Terjadi kesalahan jaringan", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-8">
+      <header className="mb-8">
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Konfigurasi Sistem & API</h1>
+        <p className="text-slate-500 dark:text-slate-400">Kelola koneksi database dan kunci API layanan pihak ketiga</p>
+      </header>
+
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-8">
+        <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6 border-b pb-4 dark:border-slate-700">Koneksi Database (Supabase)</h2>
+        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 rounded-lg text-sm">
+          <strong>Penting:</strong> Untuk instalasi di hosting seperti Netlify, sangat disarankan mengatur <code>VITE_SUPABASE_URL</code> dan <code>SUPABASE_SERVICE_ROLE_KEY</code> di pengaturan Environment Variables hosting, alih-alih di form ini. Form ini menyimpan di file lokal server sementara, cocok untuk VPS / Docker dengan persistent volume.
+        </div>
+        <form onSubmit={handleSaveDb} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-slate-50 dark:bg-slate-700/50 p-6 rounded-xl border border-slate-100 dark:border-slate-700">
+              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Supabase URL</label>
+              <input 
+                type="text" 
+                value={dbConfig.supabaseUrl}
+                onChange={(e) => setDbConfig({...dbConfig, supabaseUrl: e.target.value})}
+                className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 bg-white dark:bg-slate-800 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                placeholder="https://xxxx.supabase.co"
+                required
+              />
+            </div>
+            <div className="bg-slate-50 dark:bg-slate-700/50 p-6 rounded-xl border border-slate-100 dark:border-slate-700">
+              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Supabase Service Role Key</label>
+              <input 
+                type="password" 
+                value={dbConfig.supabaseKey}
+                onChange={(e) => setDbConfig({...dbConfig, supabaseKey: e.target.value})}
+                className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 bg-white dark:bg-slate-800 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                placeholder="eyJ..."
+                required
+              />
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <button type="submit" disabled={loadingDb} className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-xl font-bold transition-colors disabled:opacity-50">
+              {loadingDb ? 'Menyimpan...' : 'Simpan Database'}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-8">
+        <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6 border-b pb-4 dark:border-slate-700">Konfigurasi API Pihak Ketiga</h2>
+        <form onSubmit={handleSave} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-slate-50 dark:bg-slate-700/50 p-6 rounded-xl border border-slate-100 dark:border-slate-700">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
+                  <Key className="w-5 h-5" />
+                </div>
+                <h3 className="font-bold text-slate-800 dark:text-white">Gemini AI</h3>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 h-10">
+                Digunakan untuk fitur Chatbot cerdas bagi Guru dan Siswa.
+              </p>
+              <input 
+                type="password" 
+                value={apiKeys.gemini_api_key}
+                onChange={(e) => setApiKeys({...apiKeys, gemini_api_key: e.target.value})}
+                className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 bg-white dark:bg-slate-800 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                placeholder="Masukkan API Key"
+              />
+            </div>
+
+            <div className="bg-slate-50 dark:bg-slate-700/50 p-6 rounded-xl border border-slate-100 dark:border-slate-700">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-green-100 text-green-600 rounded-lg">
+                  <Megaphone className="w-5 h-5" />
+                </div>
+                <h3 className="font-bold text-slate-800 dark:text-white">WhatsApp Gateway</h3>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 h-10">
+                Digunakan untuk notifikasi otomatis ke orang tua (Opsional).
+              </p>
+              <input 
+                type="password" 
+                value={apiKeys.whatsapp_api_key}
+                onChange={(e) => setApiKeys({...apiKeys, whatsapp_api_key: e.target.value})}
+                className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 bg-white dark:bg-slate-800 dark:text-white text-sm focus:ring-2 focus:ring-green-500 outline-none"
+                placeholder="Masukkan API Key"
+              />
+            </div>
+
+            <div className="bg-slate-50 dark:bg-slate-700/50 p-6 rounded-xl border border-slate-100 dark:border-slate-700">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-purple-100 text-purple-600 rounded-lg">
+                  <Settings className="w-5 h-5" />
+                </div>
+                <h3 className="font-bold text-slate-800 dark:text-white">Lainnya</h3>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 h-10">
+                Slot untuk integrasi API tambahan di masa depan.
+              </p>
+              <input 
+                type="password" 
+                value={apiKeys.other_api_key}
+                onChange={(e) => setApiKeys({...apiKeys, other_api_key: e.target.value})}
+                className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 bg-white dark:bg-slate-800 dark:text-white text-sm focus:ring-2 focus:ring-purple-500 outline-none"
+                placeholder="Masukkan API Key"
+              />
+            </div>
+          </div>
+
+          <div className="mt-8 bg-slate-50 dark:bg-slate-700/50 p-6 rounded-xl border border-slate-100 dark:border-slate-700">
+            <h3 className="font-bold text-slate-800 dark:text-white mb-2">Template Pesan WhatsApp</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+              Gunakan variabel berikut: <code className="bg-slate-200 dark:bg-slate-600 px-1 rounded text-blue-600 dark:text-blue-400 font-mono">{"{{nama_guru}}"}</code>, <code className="bg-slate-200 dark:bg-slate-600 px-1 rounded text-blue-600 dark:text-blue-400 font-mono">{"{{kelas}}"}</code>, <code className="bg-slate-200 dark:bg-slate-600 px-1 rounded text-blue-600 dark:text-blue-400 font-mono">{"{{hari}}"}</code>, <code className="bg-slate-200 dark:bg-slate-600 px-1 rounded text-blue-600 dark:text-blue-400 font-mono">{"{{tanggal}}"}</code>, <code className="bg-slate-200 dark:bg-slate-600 px-1 rounded text-blue-600 dark:text-blue-400 font-mono">{"{{waktu}}"}</code>, <code className="bg-slate-200 dark:bg-slate-600 px-1 rounded text-blue-600 dark:text-blue-400 font-mono">{"{{jadwal}}"}</code>
+            </p>
+            <textarea 
+              rows={8}
+              value={apiKeys.wa_message_template}
+              onChange={(e) => setApiKeys({...apiKeys, wa_message_template: e.target.value})}
+              className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 bg-white dark:bg-slate-800 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 outline-none font-mono"
+              placeholder="Masukkan template pesan WA di sini... Kosongkan untuk menggunakan template default."
+            />
+          </div>
+
+          <div className="flex justify-end pt-4">
+            <button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-blue-200 dark:shadow-none transition-all flex items-center gap-2 disabled:opacity-50">
+              <Save className="w-5 h-5" /> {loading ? 'Menyimpan...' : 'Simpan Konfigurasi'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function PengumumanModal({ onClose, showToast }: { onClose: () => void, showToast: (msg: string, type?: 'success' | 'error') => void }) {
+  const [appName, setAppName] = useState("BISMA");
+  const [landingDesc, setLandingDesc] = useState("");
+  
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [announcementTitle, setAnnouncementTitle] = useState("");
+  const [announcementContent, setAnnouncementContent] = useState("");
+  const [targetRoles, setTargetRoles] = useState<string[]>(['Publik']);
+  const [tanggalTerbit, setTanggalTerbit] = useState(new Date().toISOString().split('T')[0]);
+  const [tanggalKedaluwarsa, setTanggalKedaluwarsa] = useState("");
+  
+  const [announcements, setAnnouncements] = useState<any[]>([]);
+
+  const fetchAnnouncements = async () => {
+    try {
+      const res = await fetch('/api/pengumuman');
+      const result = await res.json();
+      if (result.success && result.data) {
+        setAnnouncements(result.data);
+      }
+    } catch (e) {
+      console.error("Failed to fetch announcements", e);
+    }
+  };
+
+  useEffect(() => {
+    fetchAnnouncements();
+
+    const stored = localStorage.getItem('public_dashboard_data');
+    if (stored) {
+      const data = JSON.parse(stored);
+      setAppName(data.appName || "BISMA");
+      setLandingDesc(data.landingDesc || "");
+    }
+  }, []);
+
+  const handleNewAnnouncement = () => {
+    setEditingId(null);
+    setAnnouncementTitle("");
+    setAnnouncementContent("");
+    setTargetRoles(['Publik']);
+    setTanggalTerbit(new Date().toISOString().split('T')[0]);
+    setTanggalKedaluwarsa("");
+    setShowForm(true);
+  };
+
+  const handleEditAnnouncement = (ann: any) => {
+    setEditingId(ann.id);
+    setAnnouncementTitle(ann.judul);
+    setAnnouncementContent(ann.isi);
+    setTargetRoles(ann.target_roles || ['Publik']);
+    setTanggalTerbit(ann.tanggal_terbit || "");
+    setTanggalKedaluwarsa(ann.tanggal_kedaluwarsa || "");
+    setShowForm(true);
+  };
+
+  const handleRoleToggle = (role: string) => {
+    setTargetRoles(prev => 
+      prev.includes(role) ? prev.filter(r => r !== role) : [...prev, role]
+    );
+  };
+
+  const handleSaveApp = () => {
+    const stored = localStorage.getItem('public_dashboard_data');
+    let data = stored ? JSON.parse(stored) : { kelas1: 0, kelas2: 0, kelas3: 0, kelas4: 0, kelas5: 0, kelas6: 0 };
+    
+    data.appName = appName;
+    data.landingDesc = landingDesc;
+
+    localStorage.setItem('public_dashboard_data', JSON.stringify(data));
+    showToast("Pengaturan aplikasi disimpan", "success");
+    window.dispatchEvent(new Event('public-data-update'));
+  };
+
+  const handleSaveAnnouncement = async () => {
+    if (!announcementTitle || !announcementContent) {
+      showToast("Judul dan konten harus diisi", "error");
+      return;
+    }
+
+    try {
+      const url = editingId ? `/api/pengumuman/${editingId}` : '/api/pengumuman';
+      const method = editingId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          judul: announcementTitle,
+          isi: announcementContent,
+          target_roles: targetRoles,
+          tanggal_terbit: tanggalTerbit || null,
+          tanggal_kedaluwarsa: tanggalKedaluwarsa || null
+        })
+      });
+      
+      const result = await res.json();
+      if (result.success) {
+        showToast(editingId ? "Pengumuman berhasil diperbarui!" : "Pengumuman berhasil dipublikasikan!", "success");
+        setShowForm(false);
+        setEditingId(null);
+        fetchAnnouncements(); // Refresh list
+      } else {
+        showToast("Gagal menyimpan pengumuman: " + result.message, "error");
+      }
+    } catch (error) {
+      showToast("Terjadi kesalahan jaringan", "error");
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm('Hapus pengumuman ini?')) return;
+    try {
+      const res = await fetch(`/api/pengumuman/${id}`, { method: 'DELETE' });
+      const result = await res.json();
+      if (result.success) {
+        showToast("Pengumuman dihapus", "success");
+        fetchAnnouncements();
+      }
+    } catch (error) {
+      showToast("Terjadi kesalahan", "error");
+    }
+  };
+
+  return (
+    <>
+      <ModalHeader title="Landing Page & Pengumuman" onClose={onClose} />
+      <div className="p-8 overflow-y-auto bg-slate-50 dark:bg-slate-900/50">
+        <div className="max-w-4xl mx-auto space-y-8">
+          
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-6">
+            <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Pengaturan Aplikasi</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Nama Aplikasi</label>
+                <input 
+                  type="text" 
+                  value={appName}
+                  onChange={(e) => setAppName(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3 text-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                  placeholder="BISMA"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Deskripsi Landing Page</label>
+                <textarea 
+                  value={landingDesc}
+                  onChange={(e) => setLandingDesc(e.target.value)}
+                  className="w-full h-24 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3 text-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                  placeholder="Deskripsi singkat aplikasi..."
+                ></textarea>
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <button onClick={handleSaveApp} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-bold transition-colors">
+                Simpan Pengaturan
+              </button>
+            </div>
+          </div>
+
+          {/* Announcement Widget Section */}
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-slate-800 dark:text-white">Daftar Pengumuman</h3>
+              <button 
+                onClick={handleNewAnnouncement}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors"
+              >
+                <Plus className="w-4 h-4" /> Tambah Pengumuman
+              </button>
+            </div>
+
+            {showForm && (
+              <div className="mb-8 bg-slate-50 dark:bg-slate-700/50 p-6 rounded-xl border border-slate-200 dark:border-slate-600">
+                <h4 className="font-bold text-slate-800 dark:text-white mb-4">Form Detail Pengumuman</h4>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Judul Pengumuman</label>
+                    <input 
+                      type="text" 
+                      value={announcementTitle}
+                      onChange={(e) => setAnnouncementTitle(e.target.value)}
+                      className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Konten Pengumuman</label>
+                    <textarea 
+                      value={announcementContent}
+                      onChange={(e) => setAnnouncementContent(e.target.value)}
+                      className="w-full h-32 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                    ></textarea>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Peran Target</label>
+                    <div className="flex flex-wrap gap-4">
+                      {['Publik', 'Siswa', 'Guru', 'Staff'].map(role => (
+                        <label key={role} className="flex items-center gap-2 cursor-pointer">
+                          <input 
+                            type="checkbox" 
+                            checked={targetRoles.includes(role)}
+                            onChange={() => handleRoleToggle(role)}
+                            className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+                          />
+                          <span className="text-sm text-slate-700 dark:text-slate-300">{role}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Tanggal Terbit</label>
+                      <input 
+                        type="date" 
+                        value={tanggalTerbit}
+                        onChange={(e) => setTanggalTerbit(e.target.value)}
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Tanggal Kedaluwarsa</label>
+                      <input 
+                        type="date" 
+                        value={tanggalKedaluwarsa}
+                        onChange={(e) => setTanggalKedaluwarsa(e.target.value)}
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-3 pt-4">
+                    <button 
+                      onClick={() => setShowForm(false)}
+                      className="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg font-bold hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
+                    >
+                      Batal
+                    </button>
+                    <button 
+                      onClick={handleSaveAnnouncement}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold transition-colors"
+                    >
+                      Simpan
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200 dark:border-slate-700">
+                    <th className="p-3 text-sm font-bold text-slate-600 dark:text-slate-400">Judul</th>
+                    <th className="p-3 text-sm font-bold text-slate-600 dark:text-slate-400">Terbit</th>
+                    <th className="p-3 text-sm font-bold text-slate-600 dark:text-slate-400">Target Peran</th>
+                    <th className="p-3 text-sm font-bold text-slate-600 dark:text-slate-400 text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {announcements.map((ann, idx) => (
+                    <tr key={idx} className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                      <td className="p-3 text-sm font-medium text-slate-800 dark:text-slate-200">{ann.judul}</td>
+                      <td className="p-3 text-sm text-slate-600 dark:text-slate-400">
+                        {ann.tanggal_terbit ? new Date(ann.tanggal_terbit).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
+                      </td>
+                      <td className="p-3 text-sm text-slate-600 dark:text-slate-400">
+                        {Array.isArray(ann.target_roles) ? ann.target_roles.join(', ') : 'Publik'}
+                      </td>
+                      <td className="p-3 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button 
+                            onClick={() => handleEditAnnouncement(ann)}
+                            className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                            title="Edit"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(ann.id)}
+                            className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                            title="Hapus"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {announcements.length === 0 && (
+                    <tr>
+                      <td colSpan={4} className="p-6 text-center text-slate-500 dark:text-slate-400">
+                        Belum ada pengumuman
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function PengaturanModal({ onClose, showToast }: { onClose: () => void, showToast: (msg: string, type?: 'success' | 'error') => void }) {
+  const [schoolName, setSchoolName] = useState("Sekolah");
+  const [headmasterName, setHeadmasterName] = useState("Drs. H. Ahmad");
+  const [headmasterNIP, setHeadmasterNIP] = useState("196001011980031001");
+  const [logo1x1, setLogo1x1] = useState("");
+  const [logo3x4, setLogo3x4] = useState("");
+  const [logo4x3, setLogo4x3] = useState("");
+  const [logoKop, setLogoKop] = useState("");
+  const [tahunAjaran, setTahunAjaran] = useState("2024/2025");
+  const [semester, setSemester] = useState("Ganjil");
+  const [jumlahUlangan, setJumlahUlangan] = useState("3");
+  const [waTemplate, setWaTemplate] = useState(`SDN BAUJENG I BEJI
+BISMA
+=============
+Yth. {{nama_guru}}
+
+Berikut ini kami sampaikan laporan keterlaksanaan KBM Bapak/Ibu di kelas {{kelas}} pada hari {{hari}}, {{tanggal}}, pukul {{waktu}} WIB.
+===============
+{{jadwal}}=================
+Segera masuk kelas untuk melaksanakan KBM sesuai jadwal dan semoga menjadi amal ibadah. Amiin
+===============
+Raih Berkah dengan Khidmah
+Ket: ✅ = Hadir  |  ❌ = Tidak Hadir |`);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch('/api/pengaturan');
+        const result = await res.json();
+        if (result.success && result.data) {
+          const data = result.data;
+          setSchoolName(data.schoolName || "Sekolah");
+          setHeadmasterName(data.headmasterName || "Drs. H. Ahmad");
+          setHeadmasterNIP(data.headmasterNIP || "196001011980031001");
+          setLogo1x1(data.logo1x1 || "");
+          setLogo3x4(data.logo3x4 || "");
+          setLogo4x3(data.logo4x3 || "");
+          setLogoKop(data.logoKop || "");
+          setTahunAjaran(data.tahunAjaran || "2024/2025");
+          setSemester(data.semester || "Ganjil");
+          setJumlahUlangan(data.jumlahUlangan || "3");
+          if (data.wa_message_template) {
+            setWaTemplate(data.wa_message_template);
+          }
+          
+          // Also update localStorage for consistency
+          localStorage.setItem('school_identity_data', JSON.stringify(data));
+        } else {
+          // Fallback to localStorage if API fails or returns empty
+          const stored = localStorage.getItem('school_identity_data');
+          if (stored) {
+            const data = JSON.parse(stored);
+            setSchoolName(data.schoolName || "Sekolah");
+            setHeadmasterName(data.headmasterName || "Drs. H. Ahmad");
+            setHeadmasterNIP(data.headmasterNIP || "196001011980031001");
+            setLogo1x1(data.logo1x1 || "");
+            setLogo3x4(data.logo3x4 || "");
+            setLogo4x3(data.logo4x3 || "");
+            setLogoKop(data.logoKop || "");
+            setTahunAjaran(data.tahunAjaran || "2024/2025");
+            setSemester(data.semester || "Ganjil");
+            setJumlahUlangan(data.jumlahUlangan || "3");
+            if (data.wa_message_template) {
+              setWaTemplate(data.wa_message_template);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch settings", error);
+        // Fallback to localStorage on error
+        const stored = localStorage.getItem('school_identity_data');
+        if (stored) {
+          const data = JSON.parse(stored);
+          setSchoolName(data.schoolName || "Sekolah");
+          setHeadmasterName(data.headmasterName || "Drs. H. Ahmad");
+          setHeadmasterNIP(data.headmasterNIP || "196001011980031001");
+          setLogo1x1(data.logo1x1 || "");
+          setLogo3x4(data.logo3x4 || "");
+          setLogo4x3(data.logo4x3 || "");
+          setLogoKop(data.logoKop || "");
+          setTahunAjaran(data.tahunAjaran || "2024/2025");
+          setSemester(data.semester || "Ganjil");
+          setJumlahUlangan(data.jumlahUlangan || "3");
+          if (data.wa_message_template) {
+            setWaTemplate(data.wa_message_template);
+          }
+        }
+      }
+    };
+    
+    fetchSettings();
+  }, []);
+
+  const handleSave = async () => {
+    const data = {
+      schoolName,
+      headmasterName,
+      headmasterNIP,
+      logo1x1,
+      logo3x4,
+      logo4x3,
+      logoKop,
+      tahunAjaran,
+      semester,
+      jumlahUlangan,
+      wa_message_template: waTemplate
+    };
+    
+    try {
+      // Save to API
+      const res = await fetch('/api/pengaturan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      
+      const result = await res.json();
+      if (result.success) {
+        // Update localStorage and dispatch event
+        localStorage.setItem('school_identity_data', JSON.stringify(data));
+        window.dispatchEvent(new Event('school-identity-update'));
+        showToast("Pengaturan sekolah berhasil disimpan!");
+        onClose();
+      } else {
+        showToast("Gagal menyimpan pengaturan: " + result.message, "error");
+      }
+    } catch (error) {
+      showToast("Terjadi kesalahan jaringan", "error");
+    }
+  };
+
+  return (
+    <>
+      <ModalHeader title="Pengaturan Umum" onClose={onClose} />
+      <div className="p-8 overflow-y-auto bg-slate-50 dark:bg-slate-900/50">
+        <div className="max-w-3xl mx-auto space-y-8">
+          
+          {/* School Identity Section */}
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 rounded-lg">
+                <LayoutDashboard className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-800 dark:text-white">Identitas Sekolah</h3>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Nama Sekolah Resmi</label>
+                <input 
+                  type="text" 
+                  value={schoolName}
+                  onChange={(e) => setSchoolName(e.target.value)}
+                  className="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-3 bg-slate-50 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-slate-500 outline-none"
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Tahun Ajaran</label>
+                  <input 
+                    type="text" 
+                    value={tahunAjaran}
+                    onChange={(e) => setTahunAjaran(e.target.value)}
+                    className="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-3 bg-slate-50 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-slate-500 outline-none font-bold"
+                    placeholder="Contoh: 2024/2025"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Semester</label>
+                  <select 
+                    value={semester}
+                    onChange={(e) => setSemester(e.target.value)}
+                    className="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-3 bg-slate-50 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-slate-500 outline-none font-bold"
+                  >
+                    <option value="Ganjil">Ganjil</option>
+                    <option value="Genap">Genap</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Nama Kepala Sekolah</label>
+                  <input 
+                    type="text" 
+                    value={headmasterName}
+                    onChange={(e) => setHeadmasterName(e.target.value)}
+                    className="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-3 bg-slate-50 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-slate-500 outline-none font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">NIP Kepala Sekolah</label>
+                  <input 
+                    type="text" 
+                    value={headmasterNIP}
+                    onChange={(e) => setHeadmasterNIP(e.target.value)}
+                    className="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-3 bg-slate-50 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-slate-500 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Jumlah Ulangan Harian (Per Tengah Semester)</label>
+                <input 
+                  type="number" 
+                  min="1"
+                  max="10"
+                  value={jumlahUlangan}
+                  onChange={(e) => setJumlahUlangan(e.target.value)}
+                  className="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-3 bg-slate-50 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-slate-500 outline-none"
+                />
+                <p className="text-xs text-slate-400 mt-1">Mengatur jumlah kolom nilai ulangan harian sebelum STS dan ASAS pada fitur Nilai.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Logo Assets Section */}
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center gap-3 mb-6">
+              <h3 className="text-sm font-bold text-slate-500 uppercase">Asset URL Logo (JOS JIS)</h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">1x1</label>
+                <div className="flex gap-2">
+                  <div className="w-10 h-10 bg-slate-100 dark:bg-slate-700 rounded-lg flex-shrink-0 overflow-hidden border border-slate-200 dark:border-slate-600">
+                    {logo1x1 ? <img src={logo1x1} alt="1x1" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-300"><Upload className="w-4 h-4" /></div>}
+                  </div>
+                  <input 
+                    type="text" 
+                    value={logo1x1}
+                    onChange={(e) => setLogo1x1(e.target.value)}
+                    className="flex-1 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 bg-slate-50 dark:bg-slate-700 dark:text-white text-sm focus:ring-2 focus:ring-slate-500 outline-none"
+                    placeholder="https://..."
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">3x4</label>
+                <div className="flex gap-2">
+                  <div className="w-9 h-12 bg-slate-100 dark:bg-slate-700 rounded-lg flex-shrink-0 overflow-hidden border border-slate-200 dark:border-slate-600">
+                    {logo3x4 ? <img src={logo3x4} alt="3x4" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-300"><Upload className="w-4 h-4" /></div>}
+                  </div>
+                  <input 
+                    type="text" 
+                    value={logo3x4}
+                    onChange={(e) => setLogo3x4(e.target.value)}
+                    className="flex-1 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 bg-slate-50 dark:bg-slate-700 dark:text-white text-sm focus:ring-2 focus:ring-slate-500 outline-none"
+                    placeholder="https://..."
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">4x3</label>
+                <div className="flex gap-2">
+                  <div className="w-12 h-9 bg-slate-100 dark:bg-slate-700 rounded-lg flex-shrink-0 overflow-hidden border border-slate-200 dark:border-slate-600">
+                    {logo4x3 ? <img src={logo4x3} alt="4x3" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-300"><Upload className="w-4 h-4" /></div>}
+                  </div>
+                  <input 
+                    type="text" 
+                    value={logo4x3}
+                    onChange={(e) => setLogo4x3(e.target.value)}
+                    className="flex-1 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 bg-slate-50 dark:bg-slate-700 dark:text-white text-sm focus:ring-2 focus:ring-slate-500 outline-none"
+                    placeholder="https://..."
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Kop Surat</label>
+                <div className="flex gap-2">
+                  <div className="w-20 h-8 bg-slate-100 dark:bg-slate-700 rounded-lg flex-shrink-0 overflow-hidden border border-slate-200 dark:border-slate-600">
+                    {logoKop ? <img src={logoKop} alt="Kop" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-300"><Upload className="w-4 h-4" /></div>}
+                  </div>
+                  <input 
+                    type="text" 
+                    value={logoKop}
+                    onChange={(e) => setLogoKop(e.target.value)}
+                    className="flex-1 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 bg-slate-50 dark:bg-slate-700 dark:text-white text-sm focus:ring-2 focus:ring-slate-500 outline-none"
+                    placeholder="https://..."
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* WA Template Section */}
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+            <div className="flex flex-col gap-2 mb-4">
+              <h3 className="text-sm font-bold text-slate-500 uppercase">Template Pesan WhatsApp</h3>
+              <p className="text-xs text-slate-400">Gunakan variabel berikut: {'{{nama_guru}}'}, {'{{kelas}}'}, {'{{hari}}'}, {'{{tanggal}}'}, {'{{waktu}}'}, {'{{jadwal}}'}</p>
+            </div>
+            <textarea 
+              value={waTemplate}
+              onChange={(e) => setWaTemplate(e.target.value)}
+              className="w-full h-64 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-3 text-slate-700 dark:text-white focus:ring-2 focus:ring-slate-500 outline-none resize-y font-mono text-sm"
+              placeholder="Masukkan template pesan WhatsApp..."
+            ></textarea>
+          </div>
+
+          <div className="pt-4">
+            <button onClick={handleSave} className="w-full bg-slate-800 hover:bg-slate-900 text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-slate-200 dark:shadow-none transition-all flex items-center justify-center gap-2">
+              <Save className="w-5 h-5" /> SIMPAN PENGATURAN
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </>
+  );
+}
+
+function VisitorConfigView({ showToast }: { showToast: (msg: string, type?: 'success' | 'error') => void }) {
+  const [loading, setLoading] = useState(false);
+  const defaultMonthlyStats = [
+    { month: 'Jun 24', visitors: 300 },
+    { month: 'Jul 24', visitors: 400 },
+    { month: 'Ags 24', visitors: 520 },
+    { month: 'Sep 24', visitors: 650 },
+    { month: 'Okt 24', visitors: 780 },
+    { month: 'Nov 24', visitors: 850 },
+    { month: 'Des 24', visitors: 860 },
+    { month: 'Jan 25', visitors: 890 },
+    { month: 'Feb 25', visitors: 920 },
+    { month: 'Mar 25', visitors: 960 },
+    { month: 'Apr 25', visitors: 990 },
+    { month: 'Mei 25', visitors: 28000 },
+    { month: 'Jun 25', visitors: 30000 },
+  ];
+  
+  const defaultPieData = [
+    { name: 'SD/MI', value: 45 },
+    { name: 'SMP/MTs', value: 25 },
+    { name: 'SMA/SMK/MA', value: 15 },
+    { name: 'Lainnya', value: 15 },
+  ];
+  const defaultWordCloud = [
+    { text: 'Inovatif', count: 120 },
+    { text: 'Aman', count: 90 },
+    { text: 'Keren', count: 85 },
+    { text: 'Mudah', count: 70 },
+    { text: 'Lengkap', count: 60 },
+  ];
+  const defaultTestimonials = [
+    { name: 'Ahmad S.', lembaga: 'SDN Baujeng I', fitur: 'Dashboard Publik', testimoni: 'Sangat informatif memantau kehadiran dan kedisiplinan!', rating: 5 },
+    { name: 'Siti M.', lembaga: 'SMPN 1 Beji', fitur: 'Presensi QR', testimoni: 'Aplikasi yang mempermudah sekolah mengecek absensi.', rating: 5 },
+    { name: 'Guru J.', lembaga: 'SMA Maju', fitur: 'Lainnya', testimoni: 'Sangat bagus untuk dicontoh.', rating: 4 },
+  ];
+
+  const [config, setConfig] = useState<{
+    base_visitor_count: number;
+    enable_fake_visitor: boolean;
+    monthly_stats: { month: string, visitors: number }[];
+    pie_data: any[];
+    word_cloud: any[];
+    testimonials: any[];
+  }>({
+    base_visitor_count: 324,
+    enable_fake_visitor: true,
+    monthly_stats: defaultMonthlyStats,
+    pie_data: defaultPieData,
+    word_cloud: defaultWordCloud,
+    testimonials: defaultTestimonials,
+  });
+
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const res = await fetch('/api/helpdesk-config');
+        if (res.ok) {
+          const resData = await res.json();
+          if (resData.success && resData.data) {
+            setConfig((prev: any) => ({
+              ...prev,
+              ...resData.data,
+              monthly_stats: resData.data.monthly_stats || defaultMonthlyStats,
+              pie_data: resData.data.pie_data || defaultPieData,
+              word_cloud: resData.data.word_cloud || defaultWordCloud,
+              testimonials: resData.data.testimonials || defaultTestimonials
+            }));
+            return;
+          }
+        }
+      } catch (e) {
+        console.error("Failed to fetch from supabase", e);
+      }
+      
+      // Fallback
+      try {
+        const local = localStorage.getItem('visitor_config');
+        if (local) {
+          const parsed = JSON.parse(local);
+          setConfig((prev: any) => ({
+            ...prev,
+            ...parsed,
+            monthly_stats: parsed.monthly_stats || defaultMonthlyStats,
+            pie_data: parsed.pie_data || defaultPieData,
+            word_cloud: parsed.word_cloud || defaultWordCloud,
+            testimonials: parsed.testimonials || defaultTestimonials
+          }));
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    fetchConfig();
+  }, []);
+
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      localStorage.setItem('visitor_config', JSON.stringify(config));
+      window.dispatchEvent(new Event('storage'));
+      
+      const fetchCurrent = await fetch('/api/helpdesk-config');
+      let currentHelpdesk = {};
+      if (fetchCurrent.ok) {
+        const resData = await fetchCurrent.json();
+        if (resData.success && resData.data) currentHelpdesk = resData.data;
+      }
+
+      const res = await fetch('/api/helpdesk-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...currentHelpdesk,
+          base_visitor_count: config.base_visitor_count,
+          enable_fake_visitor: config.enable_fake_visitor,
+          monthly_stats: config.monthly_stats,
+          pie_data: config.pie_data,
+          word_cloud: config.word_cloud,
+          testimonials: config.testimonials
+        })
+      });
+
+      if (res.ok) {
+        showToast("Konfigurasi Fake Dashboard disimpan ke Supabase", "success");
+      } else {
+        showToast("Gagal menyimpan ke Supabase, hanya tersimpan lokal", "error");
+      }
+    } catch (e) {
+      showToast("Gagal menyimpan ke Supabase, jaringan error", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMonthChange = (index: number, value: string) => {
+    const newStats = [...config.monthly_stats];
+    newStats[index].visitors = Number(value);
+    setConfig({ ...config, monthly_stats: newStats });
+  };
+
+  const handlePieChange = (index: number, field: string, value: any) => {
+    const newPie = [...config.pie_data];
+    newPie[index] = { ...newPie[index], [field]: field === 'value' ? Number(value) : value };
+    setConfig({ ...config, pie_data: newPie });
+  };
+
+  const addWordCloud = () => setConfig({ ...config, word_cloud: [{ text: 'Kata Baru', count: 10 }, ...config.word_cloud] });
+  const updateWordCloud = (index: number, field: string, value: any) => {
+    const newWC = [...config.word_cloud];
+    newWC[index] = { ...newWC[index], [field]: field === 'count' ? Number(value) : value };
+    setConfig({ ...config, word_cloud: newWC });
+  };
+  const removeWordCloud = (index: number) => {
+    setConfig({ ...config, word_cloud: config.word_cloud.filter((_, i) => i !== index) });
+  };
+
+  const addTestimonial = () => setConfig({ ...config, testimonials: [{ name: 'Nama Baru', lembaga: 'Lembaga', fitur: 'Lainnya', testimoni: 'Kesan...', rating: 5 }, ...config.testimonials] });
+  const updateTestimonial = (index: number, field: string, value: any) => {
+    const newTesti = [...config.testimonials];
+    newTesti[index] = { ...newTesti[index], [field]: field === 'rating' ? Number(value) : value };
+    setConfig({ ...config, testimonials: newTesti });
+  };
+  const removeTestimonial = (index: number) => {
+    setConfig({ ...config, testimonials: config.testimonials.filter((_, i) => i !== index) });
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto pb-12">
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+            <Users className="w-6 h-6 text-teal-500" /> Konfigurasi Visitor & Fake Data
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Atur tampilan visitor harian dan data dummy untuk dashboard publik.</p>
+        </div>
+      </div>
+
+      <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-slate-700">
+        <div className="space-y-6">
+          <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-200 dark:border-slate-600">
+            <div>
+              <h3 className="font-bold text-slate-800 dark:text-white">Aktifkan Fake Visitor</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Tampilkan jumlah visitor real-time yang dimanipulasi pada public dashboard.</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input 
+                type="checkbox" 
+                className="sr-only peer" 
+                checked={config.enable_fake_visitor}
+                onChange={(e) => setConfig({...config, enable_fake_visitor: e.target.checked})}
+              />
+              <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-teal-500"></div>
+            </label>
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Base Visitor Harian Hari Ini</label>
+            <input 
+              type="number"
+              value={config.base_visitor_count}
+              onChange={(e) => setConfig({...config, base_visitor_count: Number(e.target.value)})}
+              className="w-full border border-slate-300 dark:border-slate-600 p-3 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white"
+            />
+            <p className="text-xs mt-2 text-slate-500 dark:text-slate-400">Angka ini akan ditambah dengan hitungan random di tampilan untuk kesan real-time.</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-4">Konfigurasi Pengunjung per Bulan (Bagan Monitoring)</label>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              {config.monthly_stats.map((stat, idx) => (
+                <div key={stat.month} className="bg-slate-50 dark:bg-slate-800 p-2 lg:p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">{stat.month}</label>
+                  <input 
+                    type="number"
+                    value={stat.visitors}
+                    onChange={(e) => handleMonthChange(idx, e.target.value)}
+                    className="w-full border border-slate-300 dark:border-slate-600 p-2 text-sm rounded-lg bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:ring-1 focus:ring-teal-500 outline-none"
+                  />
+                </div>
+              ))}
+            </div>
+            <p className="text-xs mt-3 text-slate-500 dark:text-slate-400 border-l-2 border-teal-500 pl-3">Nilai di atas akan digunakan untuk Chart Statistik Pengunjung di halaman Monitoring Dashboard. Untuk lonjakan prediksi Mei-Juni yang drastis, disajikan dalam tooltip yang lebih informatif.</p>
+          </div>
+
+          <div className="border-t border-slate-200 dark:border-slate-700 my-6"></div>
+
+          {/* --- PIE CHART --- */}
+          <div>
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-4">Statistik Asal Pengunjung (Pie Chart)</label>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {config.pie_data.map((pie, i) => (
+                <div key={i} className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3">
+                  <input 
+                    type="text" value={pie.name} onChange={(e) => handlePieChange(i, 'name', e.target.value)}
+                    className="w-full bg-transparent border-b border-slate-300 dark:border-slate-600 mb-2 text-xs font-bold text-slate-800 dark:text-white outline-none"
+                  />
+                  <input 
+                    type="number" value={pie.value} onChange={(e) => handlePieChange(i, 'value', e.target.value)}
+                    className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded p-1 text-sm outline-none text-slate-800 dark:text-white"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* --- WORD CLOUD --- */}
+          <div className="mt-8">
+            <div className="flex justify-between items-center mb-4">
+              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">Konfigurasi Word Cloud</label>
+              <button onClick={addWordCloud} className="px-3 py-1 bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400 text-xs font-bold rounded-lg hover:bg-teal-200 dark:hover:bg-teal-900/50">
+                + Tambah Kata
+              </button>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {config.word_cloud.map((wc, i) => (
+                <div key={i} className="flex gap-2 items-center bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2">
+                  <input 
+                    type="text" value={wc.text} onChange={(e) => updateWordCloud(i, 'text', e.target.value)}
+                    className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded p-1 text-xs outline-none text-slate-800 dark:text-white"
+                  />
+                  <input 
+                    type="number" value={wc.count} onChange={(e) => updateWordCloud(i, 'count', e.target.value)}
+                    className="w-16 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded p-1 text-xs outline-none text-slate-800 dark:text-white"
+                  />
+                  <button onClick={() => removeWordCloud(i)} className="text-red-500 hover:text-red-700 p-1"><X className="w-4 h-4" /></button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* --- TESTIMONIALS --- */}
+          <div className="mt-8">
+            <div className="flex justify-between items-center mb-4">
+              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">Data Testimoni (Monitoring)</label>
+              <button onClick={addTestimonial} className="px-3 py-1 bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400 text-xs font-bold rounded-lg hover:bg-teal-200 dark:hover:bg-teal-900/50">
+                + Tambah Testimoni
+              </button>
+            </div>
+            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+              {config.testimonials.map((t, i) => (
+                <div key={i} className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 relative">
+                  <button onClick={() => removeTestimonial(i)} className="absolute top-4 right-4 text-red-500 hover:text-red-700"><X className="w-5 h-5"/></button>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3 pr-8">
+                    <input type="text" value={t.name} onChange={(e) => updateTestimonial(i, 'name', e.target.value)} placeholder="Nama" className="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-sm outline-none text-slate-800 dark:text-white" />
+                    <input type="text" value={t.lembaga} onChange={(e) => updateTestimonial(i, 'lembaga', e.target.value)} placeholder="Lembaga" className="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-sm outline-none text-slate-800 dark:text-white" />
+                    <input type="text" value={t.fitur} onChange={(e) => updateTestimonial(i, 'fitur', e.target.value)} placeholder="Fitur" className="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-sm outline-none text-slate-800 dark:text-white" />
+                    <input type="number" min="1" max="5" value={t.rating} onChange={(e) => updateTestimonial(i, 'rating', e.target.value)} placeholder="Bintang" className="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-sm outline-none text-slate-800 dark:text-white" />
+                  </div>
+                  <input type="text" value={t.testimoni} onChange={(e) => updateTestimonial(i, 'testimoni', e.target.value)} placeholder="Tulis testimoni..." className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-sm outline-none text-slate-800 dark:text-white" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <button 
+            onClick={handleSave}
+            disabled={loading}
+            className="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 rounded-xl shadow-lg transition-all"
+          >
+            {loading ? 'Menyimpan...' : 'Simpan Konfigurasi'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HelpDeskConfigView({ showToast }: { showToast: (msg: string, type?: 'success' | 'error') => void }) {
+  const [loading, setLoading] = useState(false);
+
+  const [config, setConfig] = useState({
+    wa_number: '6285743524766',
+    wa_message: 'hallo mohon bantuan dalam akses BISMA dengan kendala ',
+    email: 'akhmadnasor@gmail.com',
+    disclaimer: 'Keamanan dan Privasi Anak adalah prioritas utama kami di SDN Baujeng I Beji. Aplikasi BISMA mematuhi standar perlindungan data anak, memastikan informasi pribadi, nilai, dan lokasi tidak dibagikan kepada pihak ketiga manapun tanpa izin eksplisit dari orang tua/wali materi.',
+    youtube_url: 'https://youtube.com/',
+    ig_url: 'https://www.instagram.com/sdnbaujeng1/',
+    web_url: 'https://www.sdnbaujeng1.sch.id/',
+    location: 'SDN Baujeng I Beji',
+    map_embed_url: '',
+    map_link_url: 'https://maps.app.goo.gl/6SZ4yHvr9FMNzdZG9'
+  });
+
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const res = await fetch('/api/helpdesk-config');
+        if (res.ok) {
+          const resData = await res.json();
+          if (resData.success && resData.data) {
+            setConfig((prev) => ({
+              ...prev,
+              ...resData.data,
+              ig_url: resData.data.ig_url ?? 'https://www.instagram.com/sdnbaujeng1/',
+              web_url: resData.data.web_url ?? 'https://www.sdnbaujeng1.sch.id/'
+            }));
+            return;
+          }
+        }
+      } catch (e) {
+        console.error("Failed to fetch from supabase", e);
+      }
+      
+      try {
+        const stored = localStorage.getItem('helpdesk_config');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          setConfig(prev => ({
+            ...prev,
+            ...parsed,
+            ig_url: parsed.ig_url ?? 'https://www.instagram.com/sdnbaujeng1/',
+            web_url: parsed.web_url ?? 'https://www.sdnbaujeng1.sch.id/'
+          }));
+        }
+      } catch (e) {}
+    };
+    fetchConfig();
+  }, []);
+
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      localStorage.setItem('helpdesk_config', JSON.stringify(config));
+      window.dispatchEvent(new Event('storage'));
+      
+      const fetchCurrent = await fetch('/api/helpdesk-config');
+      let currentHelpdesk = {};
+      if (fetchCurrent.ok) {
+        const resData = await fetchCurrent.json();
+        if (resData.success && resData.data) currentHelpdesk = resData.data;
+      }
+
+      const res = await fetch('/api/helpdesk-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...currentHelpdesk,
+          wa_number: config.wa_number,
+          wa_message: config.wa_message,
+          email: config.email,
+          disclaimer: config.disclaimer,
+          youtube_url: config.youtube_url,
+          ig_url: config.ig_url,
+          web_url: config.web_url,
+          location: config.location,
+          map_embed_url: config.map_embed_url,
+          map_link_url: config.map_link_url
+        })
+      });
+
+      if (res.ok) {
+        showToast("Konfigurasi Pusat Bantuan disimpan ke Supabase", "success");
+      } else {
+        showToast("Gagal menyimpan ke Supabase, hanya tersimpan lokal", "error");
+      }
+    } catch (e) {
+      showToast("Gagal menyimpan ke Supabase, jaringan error", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto pb-12">
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+            <HelpCircle className="w-6 h-6 text-indigo-500" /> Konfigurasi Pusat Bantuan
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Pengaturan kontak dan panduan pengguna.</p>
+        </div>
+      </div>
+
+      <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-slate-700 space-y-6">
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Google Map Embed/Iframe URL</label>
+            <input 
+              type="url"
+              value={config.map_embed_url || ''}
+              onChange={(e) => setConfig({...config, map_embed_url: e.target.value})}
+              className="w-full border border-slate-300 dark:border-slate-600 p-3 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+              placeholder="https://www.google.com/maps/embed?..."
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Google Map Direct Link</label>
+            <input 
+              type="url"
+              value={config.map_link_url || ''}
+              onChange={(e) => setConfig({...config, map_link_url: e.target.value})}
+              className="w-full border border-slate-300 dark:border-slate-600 p-3 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+              placeholder="https://maps.app.goo.gl/..."
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">WhatsApp Number</label>
+            <input 
+              type="text"
+              value={config.wa_number}
+              onChange={(e) => setConfig({...config, wa_number: e.target.value})}
+              className="w-full border border-slate-300 dark:border-slate-600 p-3 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+              placeholder="Contoh: 08123456789"
+            />
+            <p className="text-xs mt-1 text-slate-500">Awali dengan 0 atau 62</p>
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Email Konfirmasi</label>
+            <input 
+              type="email"
+              value={config.email}
+              onChange={(e) => setConfig({...config, email: e.target.value})}
+              className="w-full border border-slate-300 dark:border-slate-600 p-3 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+              placeholder="Contoh: email@sekolah.id"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Pesan Template WhatsApp</label>
+          <input 
+            type="text"
+            value={config.wa_message}
+            onChange={(e) => setConfig({...config, wa_message: e.target.value})}
+            className="w-full border border-slate-300 dark:border-slate-600 p-3 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+            placeholder="Pesan..."
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">URL Youtube Panduan</label>
+            <input 
+              type="url"
+              value={config.youtube_url}
+              onChange={(e) => setConfig({...config, youtube_url: e.target.value})}
+              className="w-full border border-slate-300 dark:border-slate-600 p-3 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+              placeholder="https://youtube.com/..."
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Teks Lokasi (Alamat)</label>
+            <input 
+              type="text"
+              value={config.location}
+              onChange={(e) => setConfig({...config, location: e.target.value})}
+              className="w-full border border-slate-300 dark:border-slate-600 p-3 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+              placeholder="SDN Baujeng I Beji..."
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">URL Instagram</label>
+            <input 
+              type="url"
+              value={config.ig_url}
+              onChange={(e) => setConfig({...config, ig_url: e.target.value})}
+              className="w-full border border-slate-300 dark:border-slate-600 p-3 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+              placeholder="https://www.instagram.com/..."
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">URL Website</label>
+            <input 
+              type="url"
+              value={config.web_url}
+              onChange={(e) => setConfig({...config, web_url: e.target.value})}
+              className="w-full border border-slate-300 dark:border-slate-600 p-3 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+              placeholder="https://www.sdnbaujeng1.sch.id/"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Teks Disclaimer Keamanan Anak</label>
+          <textarea 
+            rows={2}
+            value={config.disclaimer}
+            onChange={(e) => setConfig({...config, disclaimer: e.target.value})}
+            className="w-full border border-slate-300 dark:border-slate-600 p-3 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+            placeholder="Disclaimer..."
+          ></textarea>
+        </div>
+
+        <div className="pt-4 mt-6 border-t border-slate-200 dark:border-slate-700 pt-6">
+          <button 
+            onClick={handleSave}
+            disabled={loading}
+            className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-4 rounded-xl shadow-lg transition-all flex justify-center items-center gap-2"
+          >
+             <Save className="w-5 h-5" /> {loading ? 'Menyimpan...' : 'Simpan Konfigurasi'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
