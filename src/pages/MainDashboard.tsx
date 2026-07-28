@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { LogOut, CalendarCheck, BarChart2, FilePenLine, Printer, UserCheck, ClipboardCheck, ShieldAlert, QrCode, NotebookPen, HeartHandshake, GalleryThumbnails, Check, X, LayoutDashboard, Settings, BookOpen, Sun, Moon, Trash2, ArrowLeft, User, Info, MessageSquare, XCircle, Send, FileSpreadsheet, Gamepad, Gamepad2, Globe, Bell } from 'lucide-react';
+import { AlertTriangle, LogOut, CalendarCheck, BarChart2, FilePenLine, Printer, UserCheck, ClipboardCheck, ShieldAlert, QrCode, NotebookPen, HeartHandshake, GalleryThumbnails, Check, X, LayoutDashboard, Settings, BookOpen, Sun, Moon, Trash2, ArrowLeft, User, Info, MessageSquare, XCircle, Send, FileSpreadsheet, Gamepad, Gamepad2, Globe, Bell } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import UnifiedAnnouncementCard from '../components/UnifiedAnnouncementCard';
 
@@ -139,6 +139,7 @@ export default function MainDashboard({ user, onLogout, onNavigate, darkMode, to
     { id: 'kasih_ibu_guru', icon: KasihIbuIcon, label: kasihIbuName, gradient: 'from-pink-400 to-pink-600', shadow: 'shadow-pink-500/40', roles: ['walikelas', 'guru', 'tendik'] },
     { id: 'rekap_absensi', icon: UserCheck, label: 'Kehadiran', gradient: 'from-orange-400 to-orange-600', shadow: 'shadow-orange-500/40', roles: ['guru', 'tendik'] },
     { id: 'kedisiplinan', icon: ShieldAlert, label: 'Kedisiplinan', gradient: 'from-red-400 to-red-600', shadow: 'shadow-red-500/40', roles: ['guru', 'tendik'] },
+    { id: 'pelanggaran', icon: AlertTriangle, label: 'Pelanggaran', gradient: 'from-rose-400 to-rose-600', shadow: 'shadow-rose-500/40', roles: ['guru', 'tendik'] },
     { id: 'bank_sampah_guru', icon: Trash2, label: 'Bank Sampah', gradient: 'from-emerald-400 to-emerald-600', shadow: 'shadow-emerald-500/40', roles: ['guru', 'tendik'] },
     { id: 'edugame', url: 'https://edugamev2.netlify.app/', icon: Gamepad, label: 'Edugame', gradient: 'from-green-400 to-emerald-600', shadow: 'shadow-green-500/40', roles: ['guru', 'tendik'] },
     // Hidden by default

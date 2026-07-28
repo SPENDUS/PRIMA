@@ -1627,7 +1627,7 @@ app.get('/api/admin/stats', async (req, res) => {
       const studentClass = student['Kelas'];
 
       // 2. Query journals for this class
-      let query = supabase.from('jurnal').select('id, timestamp, ketidakhadiran, mata_pelajaran, jam_pembelajaran').eq('kelas', studentClass).order('timestamp', { ascending: false });
+      let query = supabase.from('jurnal').select('id, timestamp, ketidakhadiran, catatan_mengajar, mata_pelajaran, jam_pembelajaran, nama_guru').eq('kelas', studentClass).order('timestamp', { ascending: false });
       
       const { data: journals, error } = await query;
       if (error) throw error;
@@ -1824,6 +1824,7 @@ app.get('/api/admin/stats', async (req, res) => {
         hadirPercent = Math.min(100, Math.max(0, Math.round(((attendanceList.length - totalAbsenHari) / attendanceList.length) * 100)));
       }
 
+
       // Calculate absence in days
       let sakitHari = 0;
       let izinHari = 0;
@@ -1837,9 +1838,42 @@ app.get('/api/admin/stats', async (req, res) => {
         else if (record.status === 'Dispensasi') dispensasiHari++;
       });
 
+      // Process Pelanggaran / Catatan Kedisiplinan
+      const pelanggaranList: any[] = [];
+      let totalPoinPelanggaran = 0;
+
+      filteredJournals.forEach(j => {
+        if (j.catatan_mengajar && j.catatan_mengajar !== 'Nihil' && j.catatan_mengajar !== '[]') {
+          try {
+            const parsed = typeof j.catatan_mengajar === 'string' ? JSON.parse(j.catatan_mengajar) : j.catatan_mengajar;
+            if (Array.isArray(parsed)) {
+              parsed.forEach((d: any) => {
+                if ((d.student === studentName || d.murid === studentName) && d.type) {
+                  const match = d.type.match(/\((\d+)\s+poin\)/i);
+                  let poin = match ? parseInt(match[1]) : 0;
+                  totalPoinPelanggaran += poin;
+                  pelanggaranList.push({
+                    id: j.id,
+                    date: new Date(j.timestamp).toLocaleDateString('id-ID'),
+                    type: d.type,
+                    poin: poin,
+                    mapel: j.mata_pelajaran,
+                    guru: j.nama_guru,
+                    penanganan: d.penanganan || null
+                  });
+                }
+              });
+            }
+          } catch (e) { }
+        }
+      });
+
+
       res.json({ 
         success: true, 
         data: attendanceList,
+        pelanggaran: pelanggaranList,
+        totalPoinPelanggaran,
         summary: {
           hadirPercent,
           totalJP,

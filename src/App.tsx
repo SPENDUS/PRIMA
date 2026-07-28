@@ -10,6 +10,7 @@ import Laporan from './pages/Laporan';
 import RekapAbsensi from './pages/RekapAbsensi';
 import Keterlaksanaan from './pages/Keterlaksanaan';
 import Kedisiplinan from './pages/Kedisiplinan';
+import Pelanggaran from './pages/Pelanggaran';
 import PresensiQR from './pages/PresensiQR';
 import IframePage from './pages/IframePage';
 import ChatbotPage from './pages/ChatbotPage';
@@ -186,6 +187,7 @@ export default function App() {
       {currentPage === 'rekap_absensi' && <RekapAbsensi user={user} onNavigate={navigate} />}
       {currentPage === 'keterlaksanaan_kbm' && <Keterlaksanaan onNavigate={navigate} />}
       {currentPage === 'kedisiplinan' && <Kedisiplinan user={user} onNavigate={navigate} />}
+      {currentPage === 'pelanggaran' && <Pelanggaran user={user} onNavigate={navigate} />}
       {currentPage === 'presensi_qr' && <PresensiQR user={user} onNavigate={navigate} />}
       {currentPage === 'bank_sampah_guru' && <BankSampahGuru user={user} onNavigate={navigate} />}
       {currentPage === 'kasih_ibu_guru' && <KasihIbuGuru user={user} onNavigate={navigate} />}
