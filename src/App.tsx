@@ -193,10 +193,10 @@ export default function App() {
       {currentPage === 'chatbot' && <ChatbotPage onNavigate={navigate} />}
       {currentPage === 'rpp_generator' && <IframePage title="RPP Generator AI" src="https://sigmabai.netlify.app/" onNavigate={navigate} backTo="main" />}
       {currentPage === 'kasih_ibu' && <IframePage title="Kasih Ibu" src="https://script.google.com/macros/s/AKfycbwcbvTOoHrgsoWsLgu9db49Po6R7NkqE5BfjCbInPUw2mz9uiDbRCOxesqbh4xT1k7M/exec" onNavigate={navigate} backTo="siswa" />}
-      {currentPage === 'galeri_kegiatan' && <IframePage title="Galeri Kegiatan" src="https://www.sdnbaujeng1.sch.id/" onNavigate={navigate} backTo="main" />}
+      {currentPage === 'galeri_kegiatan' && <IframePage title="Galeri Kegiatan" src="https://www.smpn2sukorejo.sch.id/" onNavigate={navigate} backTo="main" />}
       {currentPage === 'rumah_pendidikan' && <IframePage title="Rumah Pendidikan" src="https://rumah.pendidikan.go.id/ruang/murid" onNavigate={navigate} backTo="siswa" />}
       {currentPage === 'bangkomar' && <IframePage title="Bangkomar" src="https://bangkomar.pasuruankab.go.id/" onNavigate={navigate} backTo="main" />}
-      {currentPage === 'game_generator' && <IframePage title="Game Generator" src="https://sdnbaujeng1.github.io/gamegenerator/" onNavigate={navigate} backTo="main" />}
+      {currentPage === 'game_generator' && <IframePage title="Game Generator" src="https://smpn2sukorejo.github.io/gamegenerator/" onNavigate={navigate} backTo="main" />}
       {currentPage === 'edugame' && <IframePage title="Edugame" src="https://edugamev2.netlify.app/" onNavigate={navigate} backTo={user?.role === 'siswa' ? 'siswa' : 'main'} />}
     </div>
   );

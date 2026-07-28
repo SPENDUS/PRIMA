@@ -12,7 +12,7 @@ export default function RekapAbsensi({ user, onNavigate }: { user: any, onNaviga
 
   const [headmasterName, setHeadmasterName] = useState("Drs. H. Ahmad");
   const [headmasterNIP, setHeadmasterNIP] = useState("196001011980031001");
-  const [schoolName, setSchoolName] = useState("UPT SDN Baujeng 1");
+  const [schoolName, setSchoolName] = useState("SMPN 2 Sukorejo");
 
   useEffect(() => {
     const fetchClasses = async () => {

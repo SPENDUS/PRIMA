@@ -9,14 +9,14 @@ export default function HelpDeskFloat() {
   const [config, setConfig] = useState({
     wa_number: '6285743524766',
     wa_message: 'hallo mohon bantuan dalam akses PRIMA SPENDUS dengan kendala ',
-    email: 'akhmadnasor@gmail.com',
-    disclaimer: 'Keamanan dan Privasi Anak adalah prioritas utama kami di SDN Baujeng I Beji. Aplikasi PRIMA SPENDUS mematuhi standar perlindungan data anak, memastikan informasi pribadi, nilai, dan lokasi tidak dibagikan kepada pihak ketiga manapun tanpa izin eksplisit dari orang tua/wali materi.',
+    email: 'spendusjaya@gmail.com',
+    disclaimer: 'Keamanan dan Privasi Anak adalah prioritas utama kami di SMPN 2 Sukorejo. Aplikasi PRIMA SPENDUS mematuhi standar perlindungan data anak, memastikan informasi pribadi, nilai, dan lokasi tidak dibagikan kepada pihak ketiga manapun tanpa izin eksplisit dari orang tua/wali materi.',
     youtube_url: 'https://youtube.com/',
-    location: 'SDN Baujeng I Beji',
-    ig_url: 'https://www.instagram.com/sdnbaujeng1/',
-    web_url: 'https://www.sdnbaujeng1.sch.id/',
-    map_embed_url: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1419!2d112.735817!3d-7.623635!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd7c490a2c53f81%3A0xc6ad50bd669ecb9b!2sSDN%20Baujeng%201!5e0!3m2!1sid!2sid!4v1714000000000!5m2!1sid!2sid',
-    map_link_url: 'https://maps.app.goo.gl/6SZ4yHvr9FMNzdZG9'
+    location: 'SMPN 2 Sukorejo',
+    ig_url: 'https://www.instagram.com/smpnegeri2sukorejo?igsh=ZzZ0cjRtc2J6cHB6',
+    web_url: 'http://www.smpn2sukorejo.sch.id/',
+    map_embed_url: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15815.793037844984!2d112.7250342!3d-7.7044513!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd7d100133d12a1%3A0xed6c878664373841!2sSMP%20NEGERI%202%20SUKOREJO!5e0!3m2!1sid!2sid!4v1714000000000!5m2!1sid!2sid',
+    map_link_url: 'https://maps.app.goo.gl/t1ocyu6qGHDPG9Bo6'
   });
 
   const [testimoniData, setTestimoniData] = useState({
@@ -190,7 +190,7 @@ export default function HelpDeskFloat() {
                   </div>
                 </button>
 
-                <a href={config.ig_url ?? 'https://www.instagram.com/sdnbaujeng1/'} target="_blank" rel="noreferrer" className="w-full flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition-colors text-left group">
+                <a href={config.ig_url ?? 'https://www.instagram.com/smpnegeri2sukorejo?igsh=ZzZ0cjRtc2J6cHB6'} target="_blank" rel="noreferrer" className="w-full flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition-colors text-left group">
                   <div className="w-10 h-10 rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 flex items-center justify-center shrink-0">
                     <Instagram className="w-5 h-5" />
                   </div>
@@ -200,7 +200,7 @@ export default function HelpDeskFloat() {
                   </div>
                 </a>
 
-                <a href={config.web_url ?? 'https://www.sdnbaujeng1.sch.id/'} target="_blank" rel="noreferrer" className="w-full flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition-colors text-left group">
+                <a href={config.web_url ?? 'http://www.smpn2sukorejo.sch.id/'} target="_blank" rel="noreferrer" className="w-full flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition-colors text-left group">
                   <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                     <Globe className="w-5 h-5" />
                   </div>

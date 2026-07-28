@@ -954,7 +954,7 @@ function ProfileView({ showToast, onHiddenConfig }: { showToast: (msg: string, t
             >
               Administrator
             </h2>
-            <p className="text-slate-500">admin@sdnbaujeng1.sch.id</p>
+            <p className="text-slate-500">admin@smpn2sukorejo.sch.id</p>
             <span className="inline-block mt-2 px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-full text-xs font-bold">Super Admin</span>
           </div>
         </div>
@@ -3694,7 +3694,7 @@ function VisitorConfigView({ showToast }: { showToast: (msg: string, type?: 'suc
     { text: 'Lengkap', count: 60 },
   ];
   const defaultTestimonials = [
-    { name: 'Ahmad S.', lembaga: 'SDN Baujeng I', fitur: 'Dashboard Publik', testimoni: 'Sangat informatif memantau kehadiran dan kedisiplinan!', rating: 5 },
+    { name: 'Ahmad S.', lembaga: 'SMPN 2 Sukorejo I', fitur: 'Dashboard Publik', testimoni: 'Sangat informatif memantau kehadiran dan kedisiplinan!', rating: 5 },
     { name: 'Siti M.', lembaga: 'SMPN 1 Beji', fitur: 'Presensi QR', testimoni: 'Aplikasi yang mempermudah sekolah mengecek absensi.', rating: 5 },
     { name: 'Guru J.', lembaga: 'SMA Maju', fitur: 'Lainnya', testimoni: 'Sangat bagus untuk dicontoh.', rating: 4 },
   ];
@@ -3976,14 +3976,14 @@ function HelpDeskConfigView({ showToast }: { showToast: (msg: string, type?: 'su
   const [config, setConfig] = useState({
     wa_number: '6285743524766',
     wa_message: 'hallo mohon bantuan dalam akses PRIMA SPENDUS dengan kendala ',
-    email: 'akhmadnasor@gmail.com',
-    disclaimer: 'Keamanan dan Privasi Anak adalah prioritas utama kami di SDN Baujeng I Beji. Aplikasi PRIMA SPENDUS mematuhi standar perlindungan data anak, memastikan informasi pribadi, nilai, dan lokasi tidak dibagikan kepada pihak ketiga manapun tanpa izin eksplisit dari orang tua/wali materi.',
+    email: 'spendusjaya@gmail.com',
+    disclaimer: 'Keamanan dan Privasi Anak adalah prioritas utama kami di SMPN 2 Sukorejo. Aplikasi PRIMA SPENDUS mematuhi standar perlindungan data anak, memastikan informasi pribadi, nilai, dan lokasi tidak dibagikan kepada pihak ketiga manapun tanpa izin eksplisit dari orang tua/wali materi.',
     youtube_url: 'https://youtube.com/',
-    ig_url: 'https://www.instagram.com/sdnbaujeng1/',
-    web_url: 'https://www.sdnbaujeng1.sch.id/',
-    location: 'SDN Baujeng I Beji',
+    ig_url: 'https://www.instagram.com/smpnegeri2sukorejo?igsh=ZzZ0cjRtc2J6cHB6',
+    web_url: 'http://www.smpn2sukorejo.sch.id/',
+    location: 'SMPN 2 Sukorejo',
     map_embed_url: '',
-    map_link_url: 'https://maps.app.goo.gl/6SZ4yHvr9FMNzdZG9'
+    map_link_url: 'https://maps.app.goo.gl/t1ocyu6qGHDPG9Bo6'
   });
 
   useEffect(() => {
@@ -3996,8 +3996,8 @@ function HelpDeskConfigView({ showToast }: { showToast: (msg: string, type?: 'su
             setConfig((prev) => ({
               ...prev,
               ...resData.data,
-              ig_url: resData.data.ig_url ?? 'https://www.instagram.com/sdnbaujeng1/',
-              web_url: resData.data.web_url ?? 'https://www.sdnbaujeng1.sch.id/'
+              ig_url: resData.data.ig_url ?? 'https://www.instagram.com/smpnegeri2sukorejo?igsh=ZzZ0cjRtc2J6cHB6',
+              web_url: resData.data.web_url ?? 'http://www.smpn2sukorejo.sch.id/'
             }));
             return;
           }
@@ -4013,8 +4013,8 @@ function HelpDeskConfigView({ showToast }: { showToast: (msg: string, type?: 'su
           setConfig(prev => ({
             ...prev,
             ...parsed,
-            ig_url: parsed.ig_url ?? 'https://www.instagram.com/sdnbaujeng1/',
-            web_url: parsed.web_url ?? 'https://www.sdnbaujeng1.sch.id/'
+            ig_url: parsed.ig_url ?? 'https://www.instagram.com/smpnegeri2sukorejo?igsh=ZzZ0cjRtc2J6cHB6',
+            web_url: parsed.web_url ?? 'http://www.smpn2sukorejo.sch.id/'
           }));
         }
       } catch (e) {}
@@ -4151,7 +4151,7 @@ function HelpDeskConfigView({ showToast }: { showToast: (msg: string, type?: 'su
               value={config.location}
               onChange={(e) => setConfig({...config, location: e.target.value})}
               className="w-full border border-slate-300 dark:border-slate-600 p-3 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
-              placeholder="SDN Baujeng I Beji..."
+              placeholder="SMPN 2 Sukorejo..."
             />
           </div>
         </div>
@@ -4174,7 +4174,7 @@ function HelpDeskConfigView({ showToast }: { showToast: (msg: string, type?: 'su
               value={config.web_url}
               onChange={(e) => setConfig({...config, web_url: e.target.value})}
               className="w-full border border-slate-300 dark:border-slate-600 p-3 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
-              placeholder="https://www.sdnbaujeng1.sch.id/"
+              placeholder="http://www.smpn2sukorejo.sch.id/"
             />
           </div>
         </div>

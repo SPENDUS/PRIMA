@@ -507,11 +507,11 @@ app.get('/api/admin/stats', async (req, res) => {
       configObj.wa_number = '6285743524766';
     }
     if (!configObj.map_embed_url || configObj.map_embed_url.includes('maps.app.goo.gl')) {
-       // use standard google map embed query using coordinates for SDN Baujeng 1
-       configObj.map_embed_url = 'https://maps.google.com/maps?q=SDN%20Baujeng%201%20Beji&t=&z=15&ie=UTF8&iwloc=&output=embed';
+       // use standard google map embed query using coordinates for SMPN 2 Sukorejo
+       configObj.map_embed_url = 'https://maps.google.com/maps?q=SMP%20NEGERI%202%20SUKOREJO&t=&z=15&ie=UTF8&iwloc=&output=embed';
     }
     if (!configObj.map_link_url) {
-       configObj.map_link_url = 'https://maps.app.goo.gl/6SZ4yHvr9FMNzdZG9';
+       configObj.map_link_url = 'https://maps.app.goo.gl/t1ocyu6qGHDPG9Bo6';
     }
 
     res.json({ success: true, data: configObj });
