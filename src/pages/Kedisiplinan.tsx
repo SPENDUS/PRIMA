@@ -83,17 +83,11 @@ export default function Kedisiplinan({ user, onNavigate }: { user: any, onNaviga
 
   useEffect(() => {
     const fetchClasses = async () => {
-      if (!user?.['Nama Guru']) return;
       try {
-        const { data: jadwalData, error } = await supabase
-          .from('jadwal_real')
-          .select('kelas')
-          .eq('guru', user['Nama Guru']);
-        
-        if (error) throw error;
-        
-        if (jadwalData) {
-          const uniqueClasses = Array.from(new Set(jadwalData.map(j => j.kelas))).sort();
+        const res = await fetch('/api/kelas');
+        const result = await res.json();
+        if (result.success) {
+          const uniqueClasses = result.data.map((c: string) => c.replace('Kelas ', ''));
           setAvailableClasses(uniqueClasses);
         }
       } catch (error) {
@@ -101,7 +95,7 @@ export default function Kedisiplinan({ user, onNavigate }: { user: any, onNaviga
       }
     };
     fetchClasses();
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {

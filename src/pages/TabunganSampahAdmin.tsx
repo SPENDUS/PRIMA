@@ -19,7 +19,7 @@ export default function TabunganSampahAdmin({ showToast }: { showToast: (msg: st
   const [showExchangeModal, setShowExchangeModal] = useState(false);
   const [exchangeData, setExchangeData] = useState({
     siswa: '',
-    kelas: 'Kelas 1',
+    kelas: 'Kelas 7A',
     namaAtk: '',
     harga: ''
   });
@@ -102,7 +102,7 @@ export default function TabunganSampahAdmin({ showToast }: { showToast: (msg: st
       if (result.success) {
         showToast("Transaksi Tukar ATK berhasil disimpan!", "success");
         setShowExchangeModal(false);
-        setExchangeData({ siswa: '', kelas: 'Kelas 1', namaAtk: '', harga: '' });
+        setExchangeData({ siswa: '', kelas: 'Kelas 7A', namaAtk: '', harga: '' });
         fetchData(); // Refresh
       } else {
         showToast("Gagal menyimpan data: " + result.message, "error");
@@ -182,8 +182,8 @@ export default function TabunganSampahAdmin({ showToast }: { showToast: (msg: st
         </div>
         <button 
           onClick={() => {
-            setExchangeData({ ...exchangeData, kelas: 'Kelas 1', siswa: '' });
-            filterStudentsByClass(students, 'Kelas 1');
+            setExchangeData({ ...exchangeData, kelas: 'Kelas 7A', siswa: '' });
+            filterStudentsByClass(students, 'Kelas 7A');
             setShowExchangeModal(true);
           }}
           className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg shadow-purple-200 dark:shadow-none transition-all"

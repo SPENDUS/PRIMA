@@ -277,8 +277,8 @@ export default function AdminDashboard({ user, onLogout, darkMode, toggleDarkMod
                     <h3 className="text-2xl font-bold text-slate-800 dark:text-white">{stats?.totalStudents || 0}</h3>
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-2 text-xs">
-                  {['1', '2', '3', '4', '5', '6'].map(cls => (
+                <div className="grid grid-cols-4 gap-2 text-xs">
+                  {['7A', '7B', '7C', '7D', '7E', '8A', '8B', '8C', '8D', '8E', '9A', '9B', '9C', '9D', '9E', '9F'].map(cls => (
                     <div key={cls} className="bg-slate-50 dark:bg-slate-700/50 p-2 rounded-lg text-center">
                       <span className="block text-slate-400 font-bold mb-1">Kls {cls}</span>
                       <span className="font-bold text-slate-700 dark:text-slate-200">
@@ -512,7 +512,7 @@ export default function AdminDashboard({ user, onLogout, darkMode, toggleDarkMod
             >
               <Menu className="w-6 h-6" />
             </button>
-            <h1 className="font-bold text-slate-800 dark:text-white">Admin BISMA</h1>
+            <h1 className="font-bold text-slate-800 dark:text-white">Admin PRIMA SPENDUS</h1>
           </div>
           <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-sm">
             A
@@ -881,12 +881,22 @@ function InputGuruBaruView({ showToast }: { showToast: (msg: string, type?: 'suc
             <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Wali Kelas</label>
             <select name="waliKelas" className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 bg-slate-50 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none">
               <option value="">-- Bukan Wali Kelas --</option>
-              <option value="Kelas 1">Kelas 1</option>
-              <option value="Kelas 2">Kelas 2</option>
-              <option value="Kelas 3">Kelas 3</option>
-              <option value="Kelas 4">Kelas 4</option>
-              <option value="Kelas 5">Kelas 5</option>
-              <option value="Kelas 6">Kelas 6</option>
+              <option value="Kelas 7A">Kelas 7A</option>
+                      <option value="Kelas 7B">Kelas 7B</option>
+                      <option value="Kelas 7C">Kelas 7C</option>
+                      <option value="Kelas 7D">Kelas 7D</option>
+                      <option value="Kelas 7E">Kelas 7E</option>
+                      <option value="Kelas 8A">Kelas 8A</option>
+                      <option value="Kelas 8B">Kelas 8B</option>
+                      <option value="Kelas 8C">Kelas 8C</option>
+                      <option value="Kelas 8D">Kelas 8D</option>
+                      <option value="Kelas 8E">Kelas 8E</option>
+                      <option value="Kelas 9A">Kelas 9A</option>
+                      <option value="Kelas 9B">Kelas 9B</option>
+                      <option value="Kelas 9C">Kelas 9C</option>
+                      <option value="Kelas 9D">Kelas 9D</option>
+                      <option value="Kelas 9E">Kelas 9E</option>
+                      <option value="Kelas 9F">Kelas 9F</option>
             </select>
           </div>
 
@@ -1185,7 +1195,7 @@ function ImportMasterModal({ onClose, showToast }: { onClose: () => void, showTo
         filename = "template_tendik.csv";
         break;
       case 'Siswa':
-        content = "NISN;NIS;Nama Lengkap;Kelas;Jenis Kelamin (L/P);Tanggal Lahir (YYYY-MM-DD);Password (Default: baujeng(kelas))\n1234567890;1001;Siswa A;Kelas 1;L;2017-05-20;baujeng1\n0987654321;1002;Siswa B;Kelas 1;P;2017-08-15;baujeng1";
+        content = "NISN;NIS;Nama Lengkap;Kelas;Jenis Kelamin (L/P);Tanggal Lahir (YYYY-MM-DD);Password (Default: baujeng(kelas))\n1234567890;1001;Siswa A;Kelas 7A;L;2017-05-20;baujeng1\n0987654321;1002;Siswa B;Kelas 7A;P;2017-08-15;baujeng1";
         filename = "template_siswa.csv";
         break;
     }
@@ -1412,7 +1422,7 @@ function InputManualModal({ onClose, showToast }: { onClose: () => void, showToa
 
 function JadwalModal({ onClose, showToast }: { onClose: () => void, showToast: (msg: string, type?: 'success' | 'error') => void }) {
   const [isAdding, setIsAdding] = useState(false);
-  const [selectedClass, setSelectedClass] = useState("Kelas 1");
+  const [selectedClass, setSelectedClass] = useState("Kelas 7A");
   const [selectedDay, setSelectedDay] = useState("Senin");
   const [selectedGuru, setSelectedGuru] = useState("Semua Guru");
   const [scheduleData, setScheduleData] = useState<any[]>([]);
@@ -1422,7 +1432,7 @@ function JadwalModal({ onClose, showToast }: { onClose: () => void, showToast: (
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const downloadTemplateCSV = () => {
-    const content = "Hari;Kelas;Mata Pelajaran;Guru;Jam Ke\nSenin;Kelas 1;Pendidikan Agama dan Budi Pekerti;Guru A;1\nSenin;Kelas 1;Pendidikan Agama dan Budi Pekerti;Guru A;2\nSelasa;Kelas 2;Matematika;Guru B;1";
+    const content = "Hari;Kelas;Mata Pelajaran;Guru;Jam Ke\nSenin;Kelas 7A;Pendidikan Agama dan Budi Pekerti;Guru A;1\nSenin;Kelas 7A;Pendidikan Agama dan Budi Pekerti;Guru A;2\nSelasa;Kelas 7B;Matematika;Guru B;1";
     const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -1515,7 +1525,7 @@ function JadwalModal({ onClose, showToast }: { onClose: () => void, showToast: (
   
   // Form State
   const [formHari, setFormHari] = useState("Senin");
-  const [formKelas, setFormKelas] = useState("Kelas 1");
+  const [formKelas, setFormKelas] = useState("Kelas 7A");
   const [formGuru, setFormGuru] = useState("");
   const [formJam, setFormJam] = useState<number[]>([]);
   const [formMapel, setFormMapel] = useState("");
@@ -1591,7 +1601,7 @@ function JadwalModal({ onClose, showToast }: { onClose: () => void, showToast: (
   const handleAddForJam = (jam: number) => {
     setEditingId(null);
     setFormHari(selectedDay);
-    setFormKelas(selectedClass !== "(-)" ? selectedClass : "Kelas 1");
+    setFormKelas(selectedClass !== "(-)" ? selectedClass : "Kelas 7A");
     setFormGuru(selectedGuru !== "Semua Guru" ? selectedGuru : (teachers[0]?.nama || ""));
     setFormJam([jam]);
     setFormMapel(subjectsList[0]);
@@ -1707,7 +1717,7 @@ function JadwalModal({ onClose, showToast }: { onClose: () => void, showToast: (
                 >
                   <option value="Semua Guru">Semua Guru</option>
                   {teachers.map((t) => (
-                    <option key={t.nip} value={t.nama_guru}>{t.nama_guru}</option>
+                    <option key={t.nip} value={t.nip}>{t.nama_guru}</option>
                   ))}
                 </select>
               </div>
@@ -1719,12 +1729,22 @@ function JadwalModal({ onClose, showToast }: { onClose: () => void, showToast: (
                   className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 bg-white dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-fuchsia-500 outline-none"
                 >
                   <option value="(-)">(-)</option>
-                  <option value="Kelas 1">Kelas 1</option>
-                  <option value="Kelas 2">Kelas 2</option>
-                  <option value="Kelas 3">Kelas 3</option>
-                  <option value="Kelas 4">Kelas 4</option>
-                  <option value="Kelas 5">Kelas 5</option>
-                  <option value="Kelas 6">Kelas 6</option>
+                  <option value="Kelas 7A">Kelas 7A</option>
+                      <option value="Kelas 7B">Kelas 7B</option>
+                      <option value="Kelas 7C">Kelas 7C</option>
+                      <option value="Kelas 7D">Kelas 7D</option>
+                      <option value="Kelas 7E">Kelas 7E</option>
+                      <option value="Kelas 8A">Kelas 8A</option>
+                      <option value="Kelas 8B">Kelas 8B</option>
+                      <option value="Kelas 8C">Kelas 8C</option>
+                      <option value="Kelas 8D">Kelas 8D</option>
+                      <option value="Kelas 8E">Kelas 8E</option>
+                      <option value="Kelas 9A">Kelas 9A</option>
+                      <option value="Kelas 9B">Kelas 9B</option>
+                      <option value="Kelas 9C">Kelas 9C</option>
+                      <option value="Kelas 9D">Kelas 9D</option>
+                      <option value="Kelas 9E">Kelas 9E</option>
+                      <option value="Kelas 9F">Kelas 9F</option>
                 </select>
               </div>
               <div className="flex-1 min-w-[150px]">
@@ -1786,7 +1806,7 @@ function JadwalModal({ onClose, showToast }: { onClose: () => void, showToast: (
                             {item.mapel}
                             {selectedClass === "(-)" && <span className="ml-2 text-xs bg-slate-200 dark:bg-slate-600 px-2 py-1 rounded">{item.kelas}</span>}
                           </td>
-                          <td className="px-6 py-4">{item.guru}</td>
+                          <td className="px-6 py-4">{teachers.find(t => t.nip === item.guru)?.nama_guru || item.guru}</td>
                           <td className="px-6 py-4">
                             <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-xs px-2 py-1 rounded-full font-bold">{item.peran}</span>
                           </td>
@@ -1808,7 +1828,7 @@ function JadwalModal({ onClose, showToast }: { onClose: () => void, showToast: (
                             {item.mapel}
                             {selectedClass === "(-)" && <span className="ml-2 text-xs bg-slate-200 dark:bg-slate-600 px-2 py-1 rounded">{item.kelas}</span>}
                           </td>
-                          <td className="px-6 py-4">{item.guru}</td>
+                          <td className="px-6 py-4">{teachers.find(t => t.nip === item.guru)?.nama_guru || item.guru}</td>
                           <td className="px-6 py-4">
                             <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-xs px-2 py-1 rounded-full font-bold">{item.peran}</span>
                           </td>
@@ -1862,12 +1882,22 @@ function JadwalModal({ onClose, showToast }: { onClose: () => void, showToast: (
                       className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 bg-white dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-fuchsia-500 outline-none"
                     >
                       <option value="(-)">(-)</option>
-                      <option value="Kelas 1">Kelas 1</option>
-                      <option value="Kelas 2">Kelas 2</option>
-                      <option value="Kelas 3">Kelas 3</option>
-                      <option value="Kelas 4">Kelas 4</option>
-                      <option value="Kelas 5">Kelas 5</option>
-                      <option value="Kelas 6">Kelas 6</option>
+                      <option value="Kelas 7A">Kelas 7A</option>
+                      <option value="Kelas 7B">Kelas 7B</option>
+                      <option value="Kelas 7C">Kelas 7C</option>
+                      <option value="Kelas 7D">Kelas 7D</option>
+                      <option value="Kelas 7E">Kelas 7E</option>
+                      <option value="Kelas 8A">Kelas 8A</option>
+                      <option value="Kelas 8B">Kelas 8B</option>
+                      <option value="Kelas 8C">Kelas 8C</option>
+                      <option value="Kelas 8D">Kelas 8D</option>
+                      <option value="Kelas 8E">Kelas 8E</option>
+                      <option value="Kelas 9A">Kelas 9A</option>
+                      <option value="Kelas 9B">Kelas 9B</option>
+                      <option value="Kelas 9C">Kelas 9C</option>
+                      <option value="Kelas 9D">Kelas 9D</option>
+                      <option value="Kelas 9E">Kelas 9E</option>
+                      <option value="Kelas 9F">Kelas 9F</option>
                     </select>
                   </div>
                </div>
@@ -1882,7 +1912,7 @@ function JadwalModal({ onClose, showToast }: { onClose: () => void, showToast: (
                 >
                   <option value="">-- Pilih Guru --</option>
                   {teachers.map((t) => (
-                    <option key={t.nip} value={t.nama_guru}>{t.nama_guru}</option>
+                    <option key={t.nip} value={t.nip}>{t.nama_guru}</option>
                   ))}
                 </select>
              </div>
@@ -2304,12 +2334,22 @@ function UserManagementModal({ onClose, showToast }: { onClose: () => void, show
                     onChange={(e) => setWaliKelas(e.target.value)}
                   >
                     <option value="">-- Bukan Wali Kelas --</option>
-                    <option value="Kelas 1">Kelas 1</option>
-                    <option value="Kelas 2">Kelas 2</option>
-                    <option value="Kelas 3">Kelas 3</option>
-                    <option value="Kelas 4">Kelas 4</option>
-                    <option value="Kelas 5">Kelas 5</option>
-                    <option value="Kelas 6">Kelas 6</option>
+                    <option value="Kelas 7A">Kelas 7A</option>
+                      <option value="Kelas 7B">Kelas 7B</option>
+                      <option value="Kelas 7C">Kelas 7C</option>
+                      <option value="Kelas 7D">Kelas 7D</option>
+                      <option value="Kelas 7E">Kelas 7E</option>
+                      <option value="Kelas 8A">Kelas 8A</option>
+                      <option value="Kelas 8B">Kelas 8B</option>
+                      <option value="Kelas 8C">Kelas 8C</option>
+                      <option value="Kelas 8D">Kelas 8D</option>
+                      <option value="Kelas 8E">Kelas 8E</option>
+                      <option value="Kelas 9A">Kelas 9A</option>
+                      <option value="Kelas 9B">Kelas 9B</option>
+                      <option value="Kelas 9C">Kelas 9C</option>
+                      <option value="Kelas 9D">Kelas 9D</option>
+                      <option value="Kelas 9E">Kelas 9E</option>
+                      <option value="Kelas 9F">Kelas 9F</option>
                     <option value="Ekstrakurikuler">Ekstrakurikuler</option>
                   </select>
                 </div>
@@ -2340,7 +2380,7 @@ function DataMuridModal({ onClose, showToast }: { onClose: () => void, showToast
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const downloadTemplateCSV = () => {
-    const content = "NISN;NIS;Nama Lengkap;Kelas;Jenis Kelamin (L/P);Tanggal Lahir (YYYY-MM-DD);Password (Default: baujeng(kelas))\n1234567890;1001;Siswa A;Kelas 1;L;2017-05-20;baujeng1\n0987654321;1002;Siswa B;Kelas 1;P;2017-08-15;baujeng1";
+    const content = "NISN;NIS;Nama Lengkap;Kelas;Jenis Kelamin (L/P);Tanggal Lahir (YYYY-MM-DD);Password (Default: baujeng(kelas))\n1234567890;1001;Siswa A;Kelas 7A;L;2017-05-20;baujeng1\n0987654321;1002;Siswa B;Kelas 7A;P;2017-08-15;baujeng1";
     const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -2615,13 +2655,23 @@ function DataMuridModal({ onClose, showToast }: { onClose: () => void, showToast
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Kelas</label>
-            <select name="kelas" defaultValue={selectedStudent?.Kelas || 'Kelas 1'} className="w-full border rounded-lg px-4 py-2 dark:bg-slate-700 dark:border-slate-600">
-              <option value="Kelas 1">Kelas 1</option>
-              <option value="Kelas 2">Kelas 2</option>
-              <option value="Kelas 3">Kelas 3</option>
-              <option value="Kelas 4">Kelas 4</option>
-              <option value="Kelas 5">Kelas 5</option>
-              <option value="Kelas 6">Kelas 6</option>
+            <select name="kelas" defaultValue={selectedStudent?.Kelas || 'Kelas 7A'} className="w-full border rounded-lg px-4 py-2 dark:bg-slate-700 dark:border-slate-600">
+              <option value="Kelas 7A">Kelas 7A</option>
+                      <option value="Kelas 7B">Kelas 7B</option>
+                      <option value="Kelas 7C">Kelas 7C</option>
+                      <option value="Kelas 7D">Kelas 7D</option>
+                      <option value="Kelas 7E">Kelas 7E</option>
+                      <option value="Kelas 8A">Kelas 8A</option>
+                      <option value="Kelas 8B">Kelas 8B</option>
+                      <option value="Kelas 8C">Kelas 8C</option>
+                      <option value="Kelas 8D">Kelas 8D</option>
+                      <option value="Kelas 8E">Kelas 8E</option>
+                      <option value="Kelas 9A">Kelas 9A</option>
+                      <option value="Kelas 9B">Kelas 9B</option>
+                      <option value="Kelas 9C">Kelas 9C</option>
+                      <option value="Kelas 9D">Kelas 9D</option>
+                      <option value="Kelas 9E">Kelas 9E</option>
+                      <option value="Kelas 9F">Kelas 9F</option>
             </select>
           </div>
           <div>
@@ -2980,7 +3030,7 @@ function ApiConfigView({ showToast }: { showToast: (msg: string, type?: 'success
 }
 
 function PengumumanModal({ onClose, showToast }: { onClose: () => void, showToast: (msg: string, type?: 'success' | 'error') => void }) {
-  const [appName, setAppName] = useState("BISMA");
+  const [appName, setAppName] = useState("PRIMA SPENDUS");
   const [landingDesc, setLandingDesc] = useState("");
   
   const [showForm, setShowForm] = useState(false);
@@ -3007,15 +3057,19 @@ function PengumumanModal({ onClose, showToast }: { onClose: () => void, showToas
 
   useEffect(() => {
     fetchAnnouncements();
-
-    const stored = localStorage.getItem('public_dashboard_data');
-    if (stored) {
-      const data = JSON.parse(stored);
-      setAppName(data.appName || "BISMA");
-      setLandingDesc(data.landingDesc || "");
-    }
+    const fetchAppConfig = async () => {
+      try {
+        const res = await fetch('/api/pengaturan');
+        const result = await res.json();
+        if (result.success && result.data) {
+          setAppName(result.data.appName || "PRIMA SPENDUS");
+          setLandingDesc(result.data.landingDesc || "");
+        }
+      } catch (e) {
+      }
+    };
+    fetchAppConfig();
   }, []);
-
   const handleNewAnnouncement = () => {
     setEditingId(null);
     setAnnouncementTitle("");
@@ -3042,16 +3096,18 @@ function PengumumanModal({ onClose, showToast }: { onClose: () => void, showToas
     );
   };
 
-  const handleSaveApp = () => {
-    const stored = localStorage.getItem('public_dashboard_data');
-    let data = stored ? JSON.parse(stored) : { kelas1: 0, kelas2: 0, kelas3: 0, kelas4: 0, kelas5: 0, kelas6: 0 };
-    
-    data.appName = appName;
-    data.landingDesc = landingDesc;
-
-    localStorage.setItem('public_dashboard_data', JSON.stringify(data));
-    showToast("Pengaturan aplikasi disimpan", "success");
-    window.dispatchEvent(new Event('public-data-update'));
+  const handleSaveApp = async () => {
+    try {
+      await fetch('/api/pengaturan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appName, landingDesc })
+      });
+      showToast("Pengaturan aplikasi disimpan", "success");
+      window.dispatchEvent(new Event('public-data-update'));
+    } catch (e) {
+      showToast("Gagal menyimpan pengaturan aplikasi", "error");
+    }
   };
 
   const handleSaveAnnouncement = async () => {
@@ -3120,7 +3176,7 @@ function PengumumanModal({ onClose, showToast }: { onClose: () => void, showToas
                   value={appName}
                   onChange={(e) => setAppName(e.target.value)}
                   className="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3 text-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                  placeholder="BISMA"
+                  placeholder="PRIMA SPENDUS"
                 />
               </div>
               <div>
@@ -3286,18 +3342,19 @@ function PengumumanModal({ onClose, showToast }: { onClose: () => void, showToas
 }
 
 function PengaturanModal({ onClose, showToast }: { onClose: () => void, showToast: (msg: string, type?: 'success' | 'error') => void }) {
-  const [schoolName, setSchoolName] = useState("Sekolah");
+  const [schoolName, setSchoolName] = useState("PRIMA SPENDUS");
   const [headmasterName, setHeadmasterName] = useState("Drs. H. Ahmad");
   const [headmasterNIP, setHeadmasterNIP] = useState("196001011980031001");
   const [logo1x1, setLogo1x1] = useState("");
   const [logo3x4, setLogo3x4] = useState("");
   const [logo4x3, setLogo4x3] = useState("");
   const [logoKop, setLogoKop] = useState("");
+  const [login_background_url, setLoginBackgroundUrl] = useState("");
   const [tahunAjaran, setTahunAjaran] = useState("2024/2025");
   const [semester, setSemester] = useState("Ganjil");
   const [jumlahUlangan, setJumlahUlangan] = useState("3");
   const [waTemplate, setWaTemplate] = useState(`SDN BAUJENG I BEJI
-BISMA
+PRIMA SPENDUS
 =============
 Yth. {{nama_guru}}
 
@@ -3316,13 +3373,14 @@ Ket: ✅ = Hadir  |  ❌ = Tidak Hadir |`);
         const result = await res.json();
         if (result.success && result.data) {
           const data = result.data;
-          setSchoolName(data.schoolName || "Sekolah");
+          setSchoolName(data.schoolName || "PRIMA SPENDUS");
           setHeadmasterName(data.headmasterName || "Drs. H. Ahmad");
           setHeadmasterNIP(data.headmasterNIP || "196001011980031001");
           setLogo1x1(data.logo1x1 || "");
           setLogo3x4(data.logo3x4 || "");
           setLogo4x3(data.logo4x3 || "");
           setLogoKop(data.logoKop || "");
+          setLoginBackgroundUrl(data.login_background_url || "");
           setTahunAjaran(data.tahunAjaran || "2024/2025");
           setSemester(data.semester || "Ganjil");
           setJumlahUlangan(data.jumlahUlangan || "3");
@@ -3337,13 +3395,14 @@ Ket: ✅ = Hadir  |  ❌ = Tidak Hadir |`);
           const stored = localStorage.getItem('school_identity_data');
           if (stored) {
             const data = JSON.parse(stored);
-            setSchoolName(data.schoolName || "Sekolah");
+            setSchoolName(data.schoolName || "PRIMA SPENDUS");
             setHeadmasterName(data.headmasterName || "Drs. H. Ahmad");
             setHeadmasterNIP(data.headmasterNIP || "196001011980031001");
             setLogo1x1(data.logo1x1 || "");
             setLogo3x4(data.logo3x4 || "");
             setLogo4x3(data.logo4x3 || "");
             setLogoKop(data.logoKop || "");
+            setLoginBackgroundUrl(data.login_background_url || "");
             setTahunAjaran(data.tahunAjaran || "2024/2025");
             setSemester(data.semester || "Ganjil");
             setJumlahUlangan(data.jumlahUlangan || "3");
@@ -3358,13 +3417,14 @@ Ket: ✅ = Hadir  |  ❌ = Tidak Hadir |`);
         const stored = localStorage.getItem('school_identity_data');
         if (stored) {
           const data = JSON.parse(stored);
-          setSchoolName(data.schoolName || "Sekolah");
+          setSchoolName(data.schoolName || "PRIMA SPENDUS");
           setHeadmasterName(data.headmasterName || "Drs. H. Ahmad");
           setHeadmasterNIP(data.headmasterNIP || "196001011980031001");
           setLogo1x1(data.logo1x1 || "");
           setLogo3x4(data.logo3x4 || "");
           setLogo4x3(data.logo4x3 || "");
           setLogoKop(data.logoKop || "");
+          setLoginBackgroundUrl(data.login_background_url || "");
           setTahunAjaran(data.tahunAjaran || "2024/2025");
           setSemester(data.semester || "Ganjil");
           setJumlahUlangan(data.jumlahUlangan || "3");
@@ -3387,6 +3447,7 @@ Ket: ✅ = Hadir  |  ❌ = Tidak Hadir |`);
       logo3x4,
       logo4x3,
       logoKop,
+      login_background_url,
       tahunAjaran,
       semester,
       jumlahUlangan,
@@ -3914,9 +3975,9 @@ function HelpDeskConfigView({ showToast }: { showToast: (msg: string, type?: 'su
 
   const [config, setConfig] = useState({
     wa_number: '6285743524766',
-    wa_message: 'hallo mohon bantuan dalam akses BISMA dengan kendala ',
+    wa_message: 'hallo mohon bantuan dalam akses PRIMA SPENDUS dengan kendala ',
     email: 'akhmadnasor@gmail.com',
-    disclaimer: 'Keamanan dan Privasi Anak adalah prioritas utama kami di SDN Baujeng I Beji. Aplikasi BISMA mematuhi standar perlindungan data anak, memastikan informasi pribadi, nilai, dan lokasi tidak dibagikan kepada pihak ketiga manapun tanpa izin eksplisit dari orang tua/wali materi.',
+    disclaimer: 'Keamanan dan Privasi Anak adalah prioritas utama kami di SDN Baujeng I Beji. Aplikasi PRIMA SPENDUS mematuhi standar perlindungan data anak, memastikan informasi pribadi, nilai, dan lokasi tidak dibagikan kepada pihak ketiga manapun tanpa izin eksplisit dari orang tua/wali materi.',
     youtube_url: 'https://youtube.com/',
     ig_url: 'https://www.instagram.com/sdnbaujeng1/',
     web_url: 'https://www.sdnbaujeng1.sch.id/',

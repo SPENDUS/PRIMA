@@ -1,0 +1,24 @@
+--- src/pages/PublicDashboard.tsx
++++ src/pages/PublicDashboard.tsx
+@@ -124,19 +124,13 @@
+   // Listen for storage changes to update in real-time
+   useEffect(() => {
+     const handleStorageChange = async () => {
+-      let localData = {};
+-      const storedData = null;
+-      if (storedData) {
+-        try {
+-          localData = JSON.parse(storedData);
+-        } catch (e) {}
+-      }
++      const localData = {};
+       
+       try {
+         const res = await fetch('/api/public-dashboard');
+         const result = await res.json();
+         if (result.success) {
+-          setData((prev: any) => ({ ...prev, ...localData, ...result.data }));
++          setData(result.data);
+         } else {
+           setData((prev: any) => ({ ...prev, ...localData }));
+         }

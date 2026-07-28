@@ -22,7 +22,7 @@ const HABIT_POINTS: Record<string, { points: number, icon: string }> = {
 };
 
 export default function KasihIbuGuru({ user, onNavigate }: { user: any, onNavigate: (page: string) => void }) {
-  const [selectedClass, setSelectedClass] = useState(user?.waliKelas || 'Kelas 1');
+  const [selectedClass, setSelectedClass] = useState(user?.waliKelas || 'Kelas 7A');
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isValidating, setIsValidating] = useState(false);
@@ -428,12 +428,22 @@ export default function KasihIbuGuru({ user, onNavigate }: { user: any, onNaviga
             onChange={(e) => setSelectedClass(e.target.value)}
             className="bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-700 dark:text-white focus:ring-2 focus:ring-pink-500 outline-none font-medium"
           >
-            <option>Kelas 1</option>
-            <option>Kelas 2</option>
-            <option>Kelas 3</option>
-            <option>Kelas 4</option>
-            <option>Kelas 5</option>
-            <option>Kelas 6</option>
+            <option>Kelas 7A</option>
+            <option>Kelas 7B</option>
+            <option>Kelas 7C</option>
+            <option>Kelas 7D</option>
+            <option>Kelas 7E</option>
+            <option>Kelas 8A</option>
+            <option>Kelas 8B</option>
+            <option>Kelas 8C</option>
+            <option>Kelas 8D</option>
+            <option>Kelas 8E</option>
+            <option>Kelas 9A</option>
+            <option>Kelas 9B</option>
+            <option>Kelas 9C</option>
+            <option>Kelas 9D</option>
+            <option>Kelas 9E</option>
+            <option>Kelas 9F</option>
           </select>
         </div>
         <div className="flex flex-col items-end gap-2">

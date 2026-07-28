@@ -103,12 +103,22 @@ export default function EkskulMappingView({ showToast }: { showToast: (msg: stri
             className="w-full md:w-64 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 bg-slate-50 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-fuchsia-500 outline-none"
           >
             <option value="Semua">Semua Kelas</option>
-            <option value="Kelas 1">Kelas 1</option>
-            <option value="Kelas 2">Kelas 2</option>
-            <option value="Kelas 3">Kelas 3</option>
-            <option value="Kelas 4">Kelas 4</option>
-            <option value="Kelas 5">Kelas 5</option>
-            <option value="Kelas 6">Kelas 6</option>
+            <option value="Kelas 7A">Kelas 7A</option>
+                      <option value="Kelas 7B">Kelas 7B</option>
+                      <option value="Kelas 7C">Kelas 7C</option>
+                      <option value="Kelas 7D">Kelas 7D</option>
+                      <option value="Kelas 7E">Kelas 7E</option>
+                      <option value="Kelas 8A">Kelas 8A</option>
+                      <option value="Kelas 8B">Kelas 8B</option>
+                      <option value="Kelas 8C">Kelas 8C</option>
+                      <option value="Kelas 8D">Kelas 8D</option>
+                      <option value="Kelas 8E">Kelas 8E</option>
+                      <option value="Kelas 9A">Kelas 9A</option>
+                      <option value="Kelas 9B">Kelas 9B</option>
+                      <option value="Kelas 9C">Kelas 9C</option>
+                      <option value="Kelas 9D">Kelas 9D</option>
+                      <option value="Kelas 9E">Kelas 9E</option>
+                      <option value="Kelas 9F">Kelas 9F</option>
           </select>
         </div>
 

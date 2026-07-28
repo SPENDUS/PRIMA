@@ -312,7 +312,7 @@ export default function StudentDashboard({ user, onLogout, darkMode, toggleDarkM
               </div>
               
               <div className="p-8 text-center">
-                <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-1">BISMA APPS</h2>
+                <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-1">PRIMA SPENDUS APPS</h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">Portal Siswa & Monitoring</p>
                 
                 <div className="space-y-4 text-left">
@@ -516,7 +516,7 @@ function Profil({ user, onLogout, darkMode, toggleDarkMode }: { user: any, onLog
 
 function ChatbotView() {
   const [messages, setMessages] = useState<{ text: string, sender: 'user' | 'bot' }[]>([
-    { text: 'Halo! Saya adalah asisten virtual BISMA. Ada yang bisa saya bantu?', sender: 'bot' }
+    { text: 'Halo! Saya adalah asisten virtual PRIMA SPENDUS. Ada yang bisa saya bantu?', sender: 'bot' }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -607,7 +607,7 @@ function JadwalHariIni({ user, onBack }: { user: any, onBack: () => void }) {
 
   const handleDownloadPDF = async () => {
     try {
-      const kelas = user?.Kelas || 'Kelas 1';
+      const kelas = user?.Kelas || 'Kelas 7A';
       // Fetch full schedule
       const res = await fetch(`/api/jadwal?kelas=${kelas}`);
       const data = await res.json();
@@ -708,7 +708,7 @@ function JadwalHariIni({ user, onBack }: { user: any, onBack: () => void }) {
   useEffect(() => {
     const fetchJadwal = async () => {
       try {
-        const kelas = user?.Kelas || 'Kelas 1';
+        const kelas = user?.Kelas || 'Kelas 7A';
         const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
         const dayName = days[new Date().getDay()];
         

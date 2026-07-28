@@ -17,7 +17,7 @@ export default function JadwalMengajar({ user, onNavigate }: { user: any, onNavi
     const fetchData = async () => {
       try {
         const [scheduleRes, settingsRes] = await Promise.all([
-          fetch(`/api/jadwal-mengajar?namaGuru=${encodeURIComponent(user?.['Nama Guru'] || '')}`),
+          fetch(`/api/jadwal-mengajar?namaGuru=${encodeURIComponent(user?.NIP || '')}`),
           fetch('/api/pengaturan')
         ]);
 

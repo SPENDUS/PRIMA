@@ -410,14 +410,17 @@ export default function MonitoringDashboard({ onLogout }: { onLogout: () => void
             '3': 'bg-rose-600',
             '4': 'bg-orange-600',
             '5': 'bg-purple-600',
-            '6': 'bg-indigo-600'
+            '6': 'bg-indigo-600',
+            '7': 'bg-blue-600',
+            '8': 'bg-emerald-600',
+            '9': 'bg-rose-600'
           };
           const headerColor = headerColors[classNum] || 'bg-slate-600';
           
           return (
             <div key={kelas} className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col">
               <div className={`${headerColor} text-white text-center py-3 font-bold tracking-wider relative`}>
-                <div className="text-xl uppercase">Kelas {classNum}</div>
+                <div className="text-xl uppercase">Kelas {kelas}</div>
               </div>
               <div className="p-0 flex-1 overflow-y-auto overflow-x-hidden max-h-[60vh]">
                 <table className="w-full text-sm">

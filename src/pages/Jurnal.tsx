@@ -50,7 +50,7 @@ export default function Jurnal({ user, onNavigate }: { user: any, onNavigate: (p
       const preJam = params.get('jam');
       
       if (preKelas) {
-        setKelas(preKelas);
+        setKelas(String(preKelas).toUpperCase().replace('KELAS', '').trim());
         setIsFromSchedule(true);
       }
       if (preMapel || preJam) {
@@ -66,7 +66,11 @@ export default function Jurnal({ user, onNavigate }: { user: any, onNavigate: (p
 
   useEffect(() => {
     if (kelas && initialData && Array.isArray(initialData.murid)) {
-      const filtered = initialData.murid.filter((m: any) => m.Kelas === kelas);
+      const normalizedSelectedClass = String(kelas).toLowerCase().replace('kelas', '').trim();
+      const filtered = initialData.murid.filter((m: any) => {
+         const mClass = String(m.Kelas).toLowerCase().replace('kelas', '').trim();
+         return mClass === normalizedSelectedClass;
+      });
       setMuridList(filtered);
       const initialKehadiran: any = {};
       filtered.forEach((m: any) => {
@@ -238,14 +242,15 @@ export default function Jurnal({ user, onNavigate }: { user: any, onNavigate: (p
                     </div>
                   ) : (
                     <select 
-                      value={kelas} 
+                      value={String(kelas).toLowerCase().startsWith('kelas') ? String(kelas).replace(/kelas/i, '').trim() : kelas} 
                       onChange={e => setKelas(e.target.value)}
                       className="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 bg-slate-50 dark:bg-slate-700 dark:text-white"
                     >
                       <option value="">-- Pilih Kelas --</option>
                       {uniqueKelas.map((k: any) => {
+                        const val = String(k).toUpperCase().replace('KELAS', '').trim();
                         const label = String(k).toLowerCase().startsWith('kelas') ? k : `Kelas ${k}`;
-                        return <option key={k} value={k}>{label}</option>;
+                        return <option key={k} value={val}>{label}</option>;
                       })}
                       <option value="Kegiatan Sekolah">Kegiatan Sekolah</option>
                     </select>

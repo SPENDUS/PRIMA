@@ -66,7 +66,7 @@ export default function MainDashboard({ user, onLogout, onNavigate, darkMode, to
           })
           .catch(err => console.error("Failed to fetch tendik stats", err));
       } else {
-        fetch(`/api/main-stats?namaGuru=${encodeURIComponent(user['Nama Guru'])}&targetJP=${user.TargetJP || 24}`)
+        fetch(`/api/main-stats?nip=${encodeURIComponent(user.NIP)}&namaGuru=${encodeURIComponent(user['Nama Guru'])}&targetJP=${user.TargetJP || 24}`)
           .then(res => res.json())
           .then(res => {
             if (res.success) setStats(res.data);
@@ -253,7 +253,7 @@ export default function MainDashboard({ user, onLogout, onNavigate, darkMode, to
       <main className="flex-grow px-4 -mt-8 z-10">
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-4 flex justify-between items-center border border-slate-100 dark:border-slate-700">
-            <span className="font-bold text-slate-700 dark:text-slate-200">BISMA APPS</span>
+            <span className="font-bold text-slate-700 dark:text-slate-200">PRIMA SPENDUS APPS</span>
             <div className="flex flex-col items-end">
               <span className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400">
                 {time.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
@@ -548,7 +548,7 @@ export default function MainDashboard({ user, onLogout, onNavigate, darkMode, to
               </div>
               
               <div className="p-8 text-center">
-                <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-1">BISMA APPS</h2>
+                <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-1">PRIMA SPENDUS APPS</h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">Sistem Monitoring KBM & Sekolah</p>
                 
                 <div className="space-y-4 text-left">

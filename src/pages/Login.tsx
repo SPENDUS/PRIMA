@@ -86,7 +86,7 @@ export default function Login({ onLogin, onNavigate }: { onLogin: (user: any) =>
             alt="Logo" 
             className="mx-auto h-28 w-auto mb-4 drop-shadow-2xl hover:scale-105 transition-transform duration-300" 
           />
-          <h1 className="text-3xl font-bold text-slate-800 dark:text-white drop-shadow-md">LOGIN BISMA</h1>
+          <h1 className="text-3xl font-bold text-slate-800 dark:text-white drop-shadow-md">LOGIN PRIMA SPENDUS</h1>
           <p className="text-slate-800 font-medium dark:text-slate-200 mt-1 drop-shadow">{schoolIdentity.schoolName}</p>
         </div>
         

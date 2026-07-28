@@ -70,18 +70,21 @@ export default function Keterlaksanaan({ onNavigate }: { onNavigate: (page: stri
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {Object.keys(data || {}).sort().map((cls, index) => {
-                const classMatch = cls.match(/\d+/);
-                const classNum = classMatch ? classMatch[0] : cls;
+                let classNum = cls;
+                const match = cls.match(/([789][A-F])/i);
+                if (match) classNum = match[1].toUpperCase();
+                else {
+                    const classMatch = cls.match(/\d+/);
+                    if (classMatch) classNum = classMatch[0];
+                }
                 
-                const headerColors: Record<string, string> = {
-                  '1': 'bg-blue-600',
-                  '2': 'bg-emerald-600',
-                  '3': 'bg-rose-600',
-                  '4': 'bg-orange-600',
-                  '5': 'bg-purple-600',
-                  '6': 'bg-indigo-600'
-                };
-                const headerColor = headerColors[classNum] || 'bg-slate-600';
+                const charCode = classNum.charCodeAt(classNum.length - 1) || 0;
+                const colors = [
+                  'bg-blue-600', 'bg-emerald-600', 'bg-rose-600', 
+                  'bg-orange-600', 'bg-purple-600', 'bg-indigo-600', 
+                  'bg-pink-600', 'bg-teal-600', 'bg-cyan-600'
+                ];
+                const headerColor = colors[charCode % colors.length];
 
                 return (
                   <motion.div 

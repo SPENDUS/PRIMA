@@ -51,7 +51,6 @@ export default function TugasGuru({ user, onNavigate }: { user: any, onNavigate:
       const result = await res.json();
       if (result.success) {
         const uniqueMapel = Array.from(new Set(result.data.map((d: any) => d.mapel))).filter(Boolean) as string[];
-        const uniqueKelas = Array.from(new Set(result.data.map((d: any) => d.kelas))).filter(Boolean) as string[];
         
         // If the teacher has a 'Mengajar' field (comma separated), add those too
         if (user.Mengajar) {
@@ -62,7 +61,13 @@ export default function TugasGuru({ user, onNavigate }: { user: any, onNavigate:
         }
 
         setMapelOptions(uniqueMapel);
-        setKelasOptions(uniqueKelas);
+      }
+      
+      // Fetch all unique classes from database
+      const resKelas = await fetch('/api/kelas');
+      const resultKelas = await resKelas.json();
+      if (resultKelas.success) {
+        setKelasOptions(resultKelas.data);
       }
     } catch (error) {
       console.error("Failed to fetch jadwal", error);

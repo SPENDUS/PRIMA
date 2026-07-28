@@ -8,9 +8,9 @@ export default function HelpDeskFloat() {
   
   const [config, setConfig] = useState({
     wa_number: '6285743524766',
-    wa_message: 'hallo mohon bantuan dalam akses BISMA dengan kendala ',
+    wa_message: 'hallo mohon bantuan dalam akses PRIMA SPENDUS dengan kendala ',
     email: 'akhmadnasor@gmail.com',
-    disclaimer: 'Keamanan dan Privasi Anak adalah prioritas utama kami di SDN Baujeng I Beji. Aplikasi BISMA mematuhi standar perlindungan data anak, memastikan informasi pribadi, nilai, dan lokasi tidak dibagikan kepada pihak ketiga manapun tanpa izin eksplisit dari orang tua/wali materi.',
+    disclaimer: 'Keamanan dan Privasi Anak adalah prioritas utama kami di SDN Baujeng I Beji. Aplikasi PRIMA SPENDUS mematuhi standar perlindungan data anak, memastikan informasi pribadi, nilai, dan lokasi tidak dibagikan kepada pihak ketiga manapun tanpa izin eksplisit dari orang tua/wali materi.',
     youtube_url: 'https://youtube.com/',
     location: 'SDN Baujeng I Beji',
     ig_url: 'https://www.instagram.com/sdnbaujeng1/',
@@ -150,7 +150,7 @@ export default function HelpDeskFloat() {
                   </div>
                 </button>
 
-                <a href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(config.email)}&su=${encodeURIComponent('Konfirmasi BISMA')}`} target="_top" rel="noopener noreferrer" className="w-full flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition-colors text-left group">
+                <a href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(config.email)}&su=${encodeURIComponent('Konfirmasi PRIMA SPENDUS')}`} target="_top" rel="noopener noreferrer" className="w-full flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition-colors text-left group">
                   <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
                     <Mail className="w-5 h-5" />
                   </div>
@@ -176,7 +176,7 @@ export default function HelpDeskFloat() {
                   </div>
                   <div>
                     <div className="font-bold text-slate-700 dark:text-slate-200 text-sm group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">Panduan Pengguna</div>
-                    <div className="text-xs text-slate-500">Video tutorial BISMA</div>
+                    <div className="text-xs text-slate-500">Video tutorial PRIMA SPENDUS</div>
                   </div>
                 </a>
 
@@ -218,7 +218,7 @@ export default function HelpDeskFloat() {
                   </div>
                   <div>
                     <div className="font-bold text-slate-700 dark:text-slate-200 text-sm group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">Saran & Testimoni</div>
-                    <div className="text-xs text-slate-500">Beri masukan untuk BISMA</div>
+                    <div className="text-xs text-slate-500">Beri masukan untuk PRIMA SPENDUS</div>
                   </div>
                 </button>
               </div>
@@ -316,7 +316,7 @@ export default function HelpDeskFloat() {
                 <MessageSquarePlus className="text-teal-500 w-8 h-8" />
                 Saran & Testimoni
               </h2>
-              <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Berikan masukan Anda untuk pengembangan BISMA ke depan.</p>
+              <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Berikan masukan Anda untuk pengembangan PRIMA SPENDUS ke depan.</p>
             </div>
             
             <form onSubmit={submitTestimoni} className="space-y-4">

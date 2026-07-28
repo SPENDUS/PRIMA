@@ -3,7 +3,7 @@ import { ArrowLeft, Send, MessageSquare, Bot } from 'lucide-react';
 
 export default function ChatbotPage({ onNavigate }: { onNavigate: (page: string) => void }) {
   const [messages, setMessages] = useState<{ text: string, sender: 'user' | 'bot' }[]>([
-    { text: 'Halo! Saya adalah asisten virtual BISMA. Ada yang bisa saya bantu?', sender: 'bot' }
+    { text: 'Halo! Saya adalah asisten virtual PRIMA SPENDUS. Ada yang bisa saya bantu?', sender: 'bot' }
   ]);
   const [input, setInput] = useState('');
 
@@ -48,7 +48,7 @@ export default function ChatbotPage({ onNavigate }: { onNavigate: (page: string)
             <Bot className="w-6 h-6 text-blue-600 dark:text-blue-400" />
           </div>
           <div>
-            <h1 className="font-bold text-slate-800 dark:text-white">Asisten BISMA</h1>
+            <h1 className="font-bold text-slate-800 dark:text-white">Asisten PRIMA SPENDUS</h1>
             <p className="text-xs text-green-500 font-medium flex items-center gap-1">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> Online
             </p>

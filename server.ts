@@ -5,11 +5,11 @@ import fs from 'fs';
 import cron from 'node-cron';
 import { GoogleGenAI } from "@google/genai";
 
-let currentSupabaseUrl = process.env.VITE_SUPABASE_URL || 'https://qisjuugbxrcjvpdnzxhz.supabase.co';
+let currentSupabaseUrl = process.env.VITE_SUPABASE_URL || 'https://ncfmtzglyxrvdyqcpbvb.supabase.co';
 if (!currentSupabaseUrl.startsWith('http')) {
-  currentSupabaseUrl = 'https://qisjuugbxrcjvpdnzxhz.supabase.co';
+  currentSupabaseUrl = 'https://ncfmtzglyxrvdyqcpbvb.supabase.co';
 }
-let currentSupabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpc2p1dWdieHJjanZwZG56eGh6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTI1NTczNywiZXhwIjoyMDg0ODMxNzM3fQ.5oKj5RL6OnI5kw9ciLIjAmxL1dNZwkZTEuijtnSCO5Q';
+let currentSupabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZm10emdseXhydmR5cWNwYnZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUxNzkzODIsImV4cCI6MjEwMDc1NTM4Mn0.p-cME1FOf511LFXeTi8yEHT5j3uhiDvb3bl7R6gh7mU';
 
 const configPath = path.join(process.cwd(), 'data', 'config.json');
 try {
@@ -144,7 +144,7 @@ async function sendWAReminders() {
           .replace(/\{\{jadwal\}\}/g, scheduleDetails);
       } else {
         message = `SDN BAUJENG I BEJI
-BISMA
+PRIMA SPENDUS
 =============
 Yth. ${teacher.nama_guru}
 
@@ -223,7 +223,7 @@ const PORT = 3000;
 app.get('/api/admin/stats', async (req, res) => {
     try {
       // 1. Student Counts per Class
-      const { data: muridData, error: muridError } = await supabase.from('murid').select('"Kelas"');
+      const { data: muridData, error: muridError } = await supabase.from('murid').select('"Kelas"').limit(10000);
       if (muridError) throw muridError;
 
       const kelasCounts: Record<string, number> = {};
@@ -231,14 +231,7 @@ app.get('/api/admin/stats', async (req, res) => {
 
       if (muridData) {
         muridData.forEach(m => {
-          // Normalize class name (e.g. "Kelas 1", "1", "1A" -> "Kelas 1")
           let className = m.Kelas ? String(m.Kelas).trim() : 'Unassigned';
-          // Simple normalization: if it contains a digit, use "Kelas X"
-          const digit = className.match(/\d+/);
-          if (digit) {
-            className = `Kelas ${digit[0]}`;
-          }
-          
           kelasCounts[className] = (kelasCounts[className] || 0) + 1;
         });
       }
@@ -274,17 +267,21 @@ app.get('/api/admin/stats', async (req, res) => {
       const hariIniIndo = new Intl.DateTimeFormat('id-ID', options).format(today);
       const todayDateStr = new Date(today.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' })).toISOString().split('T')[0];
 
-      const { data: muridData } = await supabase.from('murid').select('"Kelas"');
+      const { data: muridData } = await supabase.from('murid').select('"Kelas"').limit(10000);
       const totalStudents = muridData?.length || 0;
-      const kelasCounts: any = { kelas1: 0, kelas2: 0, kelas3: 0, kelas4: 0, kelas5: 0, kelas6: 0 };
+      const smpClasses = ['7A', '7B', '7C', '7D', '7E', '8A', '8B', '8C', '8D', '8E', '9A', '9B', '9C', '9D', '9E', '9F'];
+      const kelasCounts: any = {};
+      smpClasses.forEach(c => kelasCounts[`kelas${c}`] = 0);
+      
       if (muridData) {
         muridData.forEach(m => {
-          // Extract the first digit to handle cases like "1A", "1-B", "Kelas 1", etc.
-          const classMatch = String(m.Kelas).match(/\d+/);
-          const classNum = classMatch ? classMatch[0] : '';
-          
-          if (['1', '2', '3', '4', '5', '6'].includes(classNum)) {
-            kelasCounts[`kelas${classNum}`] = (kelasCounts[`kelas${classNum}`] || 0) + 1;
+          let rawClass = String(m.Kelas || '').trim();
+          const match = rawClass.match(/([789][A-F])/i);
+          if (match) {
+             const clsStr = match[1].toUpperCase();
+             if (smpClasses.includes(clsStr)) {
+                kelasCounts[`kelas${clsStr}`] = (kelasCounts[`kelas${clsStr}`] || 0) + 1;
+             }
           }
         });
       }
@@ -295,15 +292,19 @@ app.get('/api/admin/stats', async (req, res) => {
       const { data: todaysSchedule } = await supabase.from('jadwal_real').select('*').eq('hari', hariIniIndo);
       const { data: todaysJurnal } = await supabase.from('jurnal').select('*').gte('timestamp', `${todayDateStr}T00:00:00Z`).lte('timestamp', `${todayDateStr}T23:59:59Z`);
       const { data: todaysPresensi } = await supabase.from('presensi').select('*').gte('timestamp', `${todayDateStr}T00:00:00Z`).lte('timestamp', `${todayDateStr}T23:59:59Z`);
+      const { data: guruData } = await supabase.from('guru').select('nip, nama_guru');
 
       let completedKBM = 0;
       const notYetTaught: any[] = [];
       const absentStudents: any[] = [];
 
       if (todaysSchedule) {
+        const nipToName: Record<string, string> = {};
+        if (guruData) guruData.forEach(g => { nipToName[g.nip] = g.nama_guru; });
         todaysSchedule.forEach(schedule => {
+          const guruName = nipToName[schedule.guru] || schedule.guru;
           const isDone = todaysJurnal?.some(jurnal => {
-            return jurnal.nama_guru === schedule.guru && jurnal.kelas === schedule.kelas;
+            return jurnal.nama_guru === guruName && jurnal.kelas === schedule.kelas;
           });
 
           if (isDone) {
@@ -358,6 +359,9 @@ app.get('/api/admin/stats', async (req, res) => {
       }
 
       const totalScheduledKBM = todaysSchedule?.length || 0;
+      const { data: pengaturan } = await supabase.from('pengaturan').select('*');
+      let appName = 'PRIMA SPENDUS';
+      if (pengaturan) { const p = pengaturan.find(x => x.key === 'appName'); if (p) appName = p.value; }
       const percentage = totalScheduledKBM > 0 ? ((completedKBM / totalScheduledKBM) * 100).toFixed(1) : 0;
 
       const { data: pengumuman } = await supabase.from('pengumuman').select('*').order('tanggal', { ascending: false }).order('id', { ascending: false }).limit(1).maybeSingle();
@@ -366,6 +370,7 @@ app.get('/api/admin/stats', async (req, res) => {
         success: true,
         data: {
           ...kelasCounts,
+          appName,
           totalStudents,
           totalJP: totalJP || 0,
           totalScheduled: totalScheduledKBM,
@@ -696,7 +701,15 @@ app.get('/api/admin/stats', async (req, res) => {
   });
 
   app.get('/api/main-stats', async (req, res) => {
-    const { namaGuru } = req.query;
+    const { namaGuru, nip } = req.query;
+    const actualNip = nip || namaGuru; // namaGuru was previously used for name, now it might be NIP
+    
+    // Fetch actual name from nip
+    let actualName = namaGuru;
+    if (actualNip) {
+       const { data: g } = await supabase.from('guru').select('nama_guru').eq('nip', actualNip).single();
+       if (g) actualName = g.nama_guru;
+    }
     const today = new Date();
     // Adjust to Indonesia Time (UTC+7)
     const options: Intl.DateTimeFormatOptions = { timeZone: 'Asia/Jakarta', weekday: 'long' };
@@ -715,13 +728,13 @@ app.get('/api/admin/stats', async (req, res) => {
     const startOfWeekStr = startOfWeek.toISOString();
     const endOfWeekStr = endOfWeek.toISOString();
 
-    const { data: todaysSchedule } = await supabase.from('jadwal_real').select('jam, kelas, mapel').eq('hari', hariIniIndo).eq('guru', namaGuru).order('jam');
-    const { data: todaysJurnal } = await supabase.from('jurnal').select('kelas, jam_pembelajaran').eq('nama_guru', namaGuru).gte('timestamp', `${todayDateStr}T00:00:00Z`).lte('timestamp', `${todayDateStr}T23:59:59Z`);
+    const { data: todaysSchedule } = await supabase.from('jadwal_real').select('jam, kelas, mapel').eq('hari', hariIniIndo).eq('guru', actualNip).order('jam');
+    const { data: todaysJurnal } = await supabase.from('jurnal').select('kelas, jam_pembelajaran').eq('nama_guru', actualName).gte('timestamp', `${todayDateStr}T00:00:00Z`).lte('timestamp', `${todayDateStr}T23:59:59Z`);
 
-    const { data: weeklySchedule } = await supabase.from('jadwal_real').select('jam').eq('guru', namaGuru);
+    const { data: weeklySchedule } = await supabase.from('jadwal_real').select('jam').eq('guru', actualNip);
     const finalTarget = weeklySchedule?.length || 0;
 
-    const { data: weeklyJurnal } = await supabase.from('jurnal').select('jam_pembelajaran').eq('nama_guru', namaGuru).gte('timestamp', startOfWeekStr).lte('timestamp', endOfWeekStr);
+    const { data: weeklyJurnal } = await supabase.from('jurnal').select('jam_pembelajaran').eq('nama_guru', actualName).gte('timestamp', startOfWeekStr).lte('timestamp', endOfWeekStr);
     
     let currentWeeklyJP = 0;
     if (weeklyJurnal) {
@@ -814,6 +827,18 @@ app.get('/api/admin/stats', async (req, res) => {
       });
       if (error) return res.status(500).json({ success: false, message: error.message });
       res.json({ success: true, message: 'Mapping updated' });
+    } catch (e: any) {
+      res.status(500).json({ success: false, message: e.message });
+    }
+  });
+
+  app.get('/api/kelas', async (req, res) => {
+    try {
+      const { data, error } = await supabase.from('murid').select('"Kelas"');
+      if (error) throw error;
+      const uniqueKelas = Array.from(new Set(data.map((m: any) => m.Kelas))).filter(Boolean) as string[];
+      uniqueKelas.sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
+      res.json({ success: true, data: uniqueKelas });
     } catch (e: any) {
       res.status(500).json({ success: false, message: e.message });
     }
@@ -954,12 +979,19 @@ app.get('/api/admin/stats', async (req, res) => {
     const { data: scheduleList } = await supabase.from('jadwal_real').select('kelas, jam, guru, mapel').eq('hari', hariIniIndo);
     const todayDateStr = new Date(today.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' })).toISOString().split('T')[0];
     const { data: todaysJurnal } = await supabase.from('jurnal').select('*').gte('timestamp', `${todayDateStr}T00:00:00Z`).lte('timestamp', `${todayDateStr}T23:59:59Z`);
+    const { data: guruList } = await supabase.from('guru').select('nip, nama_guru');
+    
+    const nipToName: Record<string, string> = {};
+    if (guruList) {
+       guruList.forEach(g => { nipToName[g.nip] = g.nama_guru; });
+    }
 
     const dataByClass: any = {};
     if (scheduleList) {
       scheduleList.forEach(item => {
+        const guruName = nipToName[item.guru] || item.guru;
         const matchedJurnal = todaysJurnal?.find(j => {
-          if (j.kelas !== item.kelas || j.nama_guru !== item.guru) return false;
+          if (j.kelas !== item.kelas || j.nama_guru !== guruName) return false;
           if (!j.jam_pembelajaran) return true; // fallback if jam_pembelajaran is empty
           const jamList = j.jam_pembelajaran.split(',').map((s: string) => s.trim());
           return jamList.includes(String(item.jam));
@@ -968,6 +1000,7 @@ app.get('/api/admin/stats', async (req, res) => {
         if (!dataByClass[item.kelas]) dataByClass[item.kelas] = [];
         dataByClass[item.kelas].push({
           ...item,
+          guru: guruName,
           isCompleted: !!matchedJurnal,
           materi: matchedJurnal ? matchedJurnal.materi : '-',
           kebersihan: matchedJurnal ? matchedJurnal.kebersihan_kelas : '-'
@@ -1246,16 +1279,20 @@ app.get('/api/admin/stats', async (req, res) => {
         .lte('timestamp', `${todayDateStr}T23:59:59Z`);
 
       // Fetch all students to count per class
-      const { data: allMurid } = await supabase.from('murid').select('"Kelas"');
+      const { data: allMurid } = await supabase.from('murid').select('"Kelas"').limit(10000);
       const studentCountByClass: Record<string, number> = {};
       (allMurid || []).forEach(m => {
-        const cls = String(m.Kelas).replace(/\D/g, ''); // Normalize "Kelas 1" to "1"
+        const cls = String(m.Kelas).toUpperCase().replace('KELAS', '').trim(); // Normalize "Kelas 1" to "1"
         studentCountByClass[cls] = (studentCountByClass[cls] || 0) + 1;
       });
 
       // Fetch all schedules to calculate total JP for today
       const { data: allTodaySchedules } = await supabase.from('jadwal_real').select('jam').eq('hari', hariIniIndo);
       const totalJP = allTodaySchedules?.length || 0;
+      
+      const { data: guruData } = await supabase.from('guru').select('nip, nama_guru');
+      const nipToName: Record<string, string> = {};
+      if (guruData) guruData.forEach(g => { nipToName[g.nip] = g.nama_guru; });
 
       const monitoringData: any[] = [];
       const belumMengisi: any[] = [];
@@ -1263,7 +1300,7 @@ app.get('/api/admin/stats', async (req, res) => {
       // Derive classes dynamically from schedules and students
       const classSet = new Set<string>();
       (todaysSchedule || []).forEach(s => {
-        const cls = String(s.kelas).replace(/\D/g, '');
+        const cls = String(s.kelas).toUpperCase().replace('KELAS', '').trim();
         if (cls) classSet.add(cls);
       });
       Object.keys(studentCountByClass).forEach(c => {
@@ -1286,7 +1323,7 @@ app.get('/api/admin/stats', async (req, res) => {
       
       if (todaysJurnal) {
         todaysJurnal.forEach(j => {
-          const jCls = String(j.kelas).replace(/\D/g, '');
+          const jCls = String(j.kelas).toUpperCase().replace('KELAS', '').trim();
           // Ketidakhadiran
           try {
             const absen = typeof j.ketidakhadiran === 'string' ? JSON.parse(j.ketidakhadiran) : j.ketidakhadiran;
@@ -1332,11 +1369,11 @@ app.get('/api/admin/stats', async (req, res) => {
       const detailKeterlaksanaan: { kelas: string, total: number, done: number, percentage: number }[] = [];
       classes.forEach(cls => {
         const classJadwal = todaysSchedule?.filter(s => {
-          const sCls = String(s.kelas).replace(/\D/g, '');
+          const sCls = String(s.kelas).toUpperCase().replace('KELAS', '').trim();
           return sCls === cls;
         }) || [];
         const classJurnal = todaysJurnal?.filter(j => {
-          const jCls = String(j.kelas).replace(/\D/g, '');
+          const jCls = String(j.kelas).toUpperCase().replace('KELAS', '').trim();
           return jCls === cls;
         }) || [];
         
@@ -1360,20 +1397,21 @@ app.get('/api/admin/stats', async (req, res) => {
       // Logic for monitoring grid (all schedules for today)
       classes.forEach(cls => {
         const classSchedule = todaysSchedule?.filter(s => {
-          const sCls = String(s.kelas).replace(/\D/g, '');
+          const sCls = String(s.kelas).toUpperCase().replace('KELAS', '').trim();
           return sCls === cls;
         }) || [];
         
         if (classSchedule.length > 0) {
           classSchedule.forEach(sch => {
+            const guruName = nipToName[sch.guru] || sch.guru;
             const isDone = todaysJurnal?.some(j => {
-              const jCls = String(j.kelas).replace(/\D/g, '');
-              return jCls === cls && j.nama_guru === sch.guru;
+              const jCls = String(j.kelas).toUpperCase().replace('KELAS', '').trim();
+              return jCls === cls && j.nama_guru === guruName;
             });
             monitoringData.push({
               kelas: cls, // Use normalized class
               status: isDone,
-              guru: sch.guru,
+              guru: guruName,
               mapel: sch.mapel,
               jam: String(sch.jam)
             });
@@ -1385,7 +1423,8 @@ app.get('/api/admin/stats', async (req, res) => {
       if (todaysSchedule) {
         const uniqueBelumMengisi = new Set<string>();
         todaysSchedule.forEach(sch => {
-          const isDone = todaysJurnal?.some(j => j.kelas === sch.kelas && j.nama_guru === sch.guru);
+          const guruName = nipToName[sch.guru] || sch.guru;
+          const isDone = todaysJurnal?.some(j => j.kelas === sch.kelas && j.nama_guru === guruName);
           if (!isDone) {
             const key = `${sch.guru}-${sch.kelas}-${sch.mapel}`;
             if (!uniqueBelumMengisi.has(key)) {
@@ -1440,6 +1479,7 @@ app.get('/api/admin/stats', async (req, res) => {
             target_jp: item.Target_JP || 24
           });
         }
+        await syncGuruJadwal();
       } else if (type === 'tendik') {
         for (const item of data) {
           await supabase.from('tendik').upsert({
@@ -2191,7 +2231,7 @@ app.get('/api/admin/stats', async (req, res) => {
       const { data: teacherJournal } = await supabase.from('jurnal').select('*').eq('kelas', kelas).order('timestamp', { ascending: false });
       
       // 2. Student's Habit Journal
-      const { data: studentJournal } = await supabase.from('jurnal_kebiasaan').select('*').eq('nis', nis).order('timestamp', { ascending: false });
+      const { data: studentJournal } = await supabase.from('kasih_ibu').select('*').eq('nisn', nis).order('timestamp', { ascending: false });
 
       const combined = [
         ...(teacherJournal || []).map(j => ({ ...j, source: 'Guru', type: 'KBM' })),
@@ -2229,6 +2269,9 @@ app.get('/api/admin/stats', async (req, res) => {
           currentConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
         }
         currentConfig = { ...currentConfig, supabaseUrl, supabaseKey };
+        if (!fs.existsSync(path.join(process.cwd(), 'data'))) {
+          fs.mkdirSync(path.join(process.cwd(), 'data'), { recursive: true });
+        }
         fs.writeFileSync(configPath, JSON.stringify(currentConfig, null, 2));
         
         // Re-initialize client
@@ -2402,10 +2445,34 @@ app.get('/api/admin/stats', async (req, res) => {
     res.json({ success: true, data });
   });
 
+
+async function syncGuruJadwal() {
+  try {
+    const { data: jadwal } = await supabase.from('jadwal_real').select('*');
+    const guruMap = new Map();
+    jadwal?.forEach(j => {
+        if (!guruMap.has(j.guru)) {
+            guruMap.set(j.guru, { jp: 0, mapels: new Set() });
+        }
+        guruMap.get(j.guru).jp++;
+        guruMap.get(j.guru).mapels.add(j.mapel);
+    });
+    
+    for (const [nip, stats] of guruMap.entries()) {
+        const mengajar = Array.from(stats.mapels).join(';');
+        const target_jp = stats.jp;
+        await supabase.from('guru').update({ mengajar, target_jp }).eq('nip', nip);
+    }
+  } catch(e) {
+    console.error("Error syncing guru jadwal", e);
+  }
+}
+
   app.delete('/api/jadwal/:id', async (req, res) => {
     const { id } = req.params;
     const { error } = await supabase.from('jadwal_real').delete().eq('id', id);
     if (error) return res.status(500).json({ success: false, message: error.message });
+    await syncGuruJadwal();
     res.json({ success: true, message: 'Jadwal berhasil dihapus' });
   });
   
@@ -2417,6 +2484,7 @@ app.get('/api/admin/stats', async (req, res) => {
     }).eq('id', id);
     
     if (error) return res.status(500).json({ success: false, message: error.message });
+    await syncGuruJadwal();
     res.json({ success: true, message: 'Jadwal berhasil diupdate' });
   });
 
@@ -2505,7 +2573,7 @@ app.get('/api/admin/stats', async (req, res) => {
       
       const { data: settingsData } = await supabase.from('pengaturan').select('key, value');
       const fonnteToken = settingsData?.find((s: any) => s.key === 'whatsapp_api_key')?.value;
-      const waTemplate = settingsData?.find((s: any) => s.key === 'wa_message_template')?.value || "Bantuan HelpDesk BISMA";
+      const waTemplate = settingsData?.find((s: any) => s.key === 'wa_message_template')?.value || "Bantuan HelpDesk PRIMA SPENDUS";
       
       if (!fonnteToken) {
         return res.status(400).json({ success: false, message: 'WhatsApp API Key (Fonnte) belum dikonfigurasi di Pengaturan.' });
@@ -2677,6 +2745,7 @@ app.get('/api/admin/stats', async (req, res) => {
     });
     
     if (error) return res.status(500).json({ success: false, message: error.message });
+    await syncGuruJadwal();
     res.json({ success: true, message: 'Jadwal berhasil disimpan' });
   });
 

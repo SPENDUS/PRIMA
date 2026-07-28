@@ -9,7 +9,7 @@ export interface SchoolIdentity {
 
 export function useSchoolIdentity() {
   const [identity, setIdentity] = useState<SchoolIdentity>({
-    schoolName: "Sekolah",
+    schoolName: "PRIMA SPENDUS",
     headmasterName: "Kepala Sekolah",
     headmasterNIP: "-",
     schoolLogo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg/800px-Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg.png"
@@ -23,7 +23,7 @@ export function useSchoolIdentity() {
         if (result.success && result.data) {
           const data = result.data;
           const newIdentity = {
-            schoolName: data.schoolName || "Sekolah",
+            schoolName: data.schoolName || "PRIMA SPENDUS",
             headmasterName: data.headmasterName || "Kepala Sekolah",
             headmasterNIP: data.headmasterNIP || "-",
             schoolLogo: data.logo1x1 || "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg/800px-Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg.png"
@@ -51,7 +51,7 @@ export function useSchoolIdentity() {
             schoolLogo: data.logo1x1 || data.schoolLogo || "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg/800px-Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg.png"
           };
           setIdentity(mappedData);
-          document.title = mappedData.schoolName || "Sekolah";
+          document.title = mappedData.schoolName || "PRIMA SPENDUS";
           let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
           if (link && mappedData.schoolLogo) {
             link.href = mappedData.schoolLogo;

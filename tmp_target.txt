@@ -1,0 +1,11 @@
+  useEffect(() => {
+    fetchAnnouncements();
+
+    const stored = localStorage.getItem('public_dashboard_data');
+    if (stored) {
+      const data = JSON.parse(stored);
+      setAppName(data.appName || "BISMA");
+      setLandingDesc(data.landingDesc || "");
+    }
+  }, []);
+

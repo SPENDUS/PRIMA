@@ -7,14 +7,14 @@ export default function BankSampahGuru({ user, onNavigate }: { user: any, onNavi
   const [showExchangeModal, setShowExchangeModal] = useState(false);
   const [formData, setFormData] = useState({
     siswa: '',
-    kelas: 'Kelas 1', // Default
+    kelas: 'Kelas 7A', // Default
     jenisSampah: '',
     berat: '',
     nilai: ''
   });
   const [exchangeData, setExchangeData] = useState({
     siswa: '',
-    kelas: 'Kelas 1',
+    kelas: 'Kelas 7A',
     namaAtk: '',
     harga: ''
   });
@@ -132,7 +132,7 @@ export default function BankSampahGuru({ user, onNavigate }: { user: any, onNavi
       if (result.success) {
         showToast("Data Bank Sampah berhasil disimpan!", "success");
         setShowModal(false);
-        setFormData({ siswa: '', kelas: 'Kelas 1', jenisSampah: '', berat: '', nilai: '' });
+        setFormData({ siswa: '', kelas: 'Kelas 7A', jenisSampah: '', berat: '', nilai: '' });
         fetchData(); // Refresh
       } else {
         showToast("Gagal menyimpan data: " + result.message, "error");
@@ -165,7 +165,7 @@ export default function BankSampahGuru({ user, onNavigate }: { user: any, onNavi
       if (result.success) {
         showToast("Transaksi Tukar ATK berhasil disimpan!", "success");
         setShowExchangeModal(false);
-        setExchangeData({ siswa: '', kelas: 'Kelas 1', namaAtk: '', harga: '' });
+        setExchangeData({ siswa: '', kelas: 'Kelas 7A', namaAtk: '', harga: '' });
         fetchData(); // Refresh
       } else {
         showToast("Gagal menyimpan data: " + result.message, "error");
@@ -208,8 +208,8 @@ export default function BankSampahGuru({ user, onNavigate }: { user: any, onNavi
         <div className="flex gap-2">
           <button 
             onClick={() => {
-              setExchangeData({ ...exchangeData, kelas: 'Kelas 1', siswa: '' });
-              filterStudentsByClass(students, 'Kelas 1');
+              setExchangeData({ ...exchangeData, kelas: 'Kelas 7A', siswa: '' });
+              filterStudentsByClass(students, 'Kelas 7A');
               setShowExchangeModal(true);
             }}
             className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg shadow-purple-200 dark:shadow-none transition-all"
@@ -218,8 +218,8 @@ export default function BankSampahGuru({ user, onNavigate }: { user: any, onNavi
           </button>
           <button 
             onClick={() => {
-              setFormData({ ...formData, kelas: 'Kelas 1', siswa: '' });
-              filterStudentsByClass(students, 'Kelas 1');
+              setFormData({ ...formData, kelas: 'Kelas 7A', siswa: '' });
+              filterStudentsByClass(students, 'Kelas 7A');
               setShowModal(true);
             }}
             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg shadow-green-200 dark:shadow-none transition-all"
@@ -310,12 +310,22 @@ export default function BankSampahGuru({ user, onNavigate }: { user: any, onNavi
                     value={formData.kelas}
                     onChange={handleClassChange}
                   >
-                    <option value="Kelas 1">Kelas 1</option>
-                    <option value="Kelas 2">Kelas 2</option>
-                    <option value="Kelas 3">Kelas 3</option>
-                    <option value="Kelas 4">Kelas 4</option>
-                    <option value="Kelas 5">Kelas 5</option>
-                    <option value="Kelas 6">Kelas 6</option>
+                    <option value="Kelas 7A">Kelas 7A</option>
+                      <option value="Kelas 7B">Kelas 7B</option>
+                      <option value="Kelas 7C">Kelas 7C</option>
+                      <option value="Kelas 7D">Kelas 7D</option>
+                      <option value="Kelas 7E">Kelas 7E</option>
+                      <option value="Kelas 8A">Kelas 8A</option>
+                      <option value="Kelas 8B">Kelas 8B</option>
+                      <option value="Kelas 8C">Kelas 8C</option>
+                      <option value="Kelas 8D">Kelas 8D</option>
+                      <option value="Kelas 8E">Kelas 8E</option>
+                      <option value="Kelas 9A">Kelas 9A</option>
+                      <option value="Kelas 9B">Kelas 9B</option>
+                      <option value="Kelas 9C">Kelas 9C</option>
+                      <option value="Kelas 9D">Kelas 9D</option>
+                      <option value="Kelas 9E">Kelas 9E</option>
+                      <option value="Kelas 9F">Kelas 9F</option>
                   </select>
                 </div>
                 <div>
