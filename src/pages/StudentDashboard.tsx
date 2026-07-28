@@ -179,7 +179,7 @@ export default function StudentDashboard({ user, onLogout, darkMode, toggleDarkM
       case 'kehadiran':
         return <Kehadiran user={user} onBack={() => setActiveTab('kbm')} />;
       case 'pelanggaran':
-        return <Pelanggaran onBack={() => setActiveTab('kbm')} />;
+        return <Pelanggaran user={user} onBack={() => setActiveTab('kbm')} />;
       case 'literasi':
         return <Literasi onBack={() => setActiveTab('kbm')} />;
       case 'tugas':

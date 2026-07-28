@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Send, CheckCircle2, ClipboardList, PlusCircle, Search } from 'lucide-react';
+import { ArrowLeft, Edit2, Trash2, X, Send, CheckCircle2, ClipboardList, PlusCircle, Search } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigate: (page: string) => void }) {
@@ -7,11 +7,55 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
   const [siswaList, setSiswaList] = useState<any[]>([]);
   const [selectedSiswa, setSelectedSiswa] = useState('');
   const [pelanggaranDesc, setPelanggaranDesc] = useState('');
+  const [penanganan, setPenanganan] = useState(false);
   const [initialData, setInitialData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [activeTab, setActiveTab] = useState('input');
   const [rekapData, setRekapData] = useState<any[]>([]);
+  const [editingItem, setEditingItem] = useState<any>(null);
+  const [editDesc, setEditDesc] = useState('');
+  const [editPenanganan, setEditPenanganan] = useState(false);
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm('Yakin ingin menghapus pelanggaran ini?')) return;
+    try {
+      const res = await fetch(`/api/pelanggaran/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        fetchRekap();
+      } else {
+        alert('Gagal menghapus');
+      }
+    } catch (e) {
+      alert('Terjadi kesalahan');
+    }
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingItem) return;
+    try {
+      const res = await fetch(`/api/pelanggaran/${editingItem.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: editDesc,
+          penanganan: editPenanganan ? 'Sudah Ditangani' : null
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setEditingItem(null);
+        fetchRekap();
+      } else {
+        alert('Gagal mengupdate');
+      }
+    } catch (e) {
+      alert('Terjadi kesalahan');
+    }
+  };
+
   const [loadingRekap, setLoadingRekap] = useState(false);
 
 
@@ -95,7 +139,7 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
       const { data: journalData, error } = await supabase
         .from('jurnal')
         .select('id, timestamp, catatan_mengajar, mata_pelajaran, nama_guru')
-        .eq('kelas', kelas)
+        .or(`kelas.eq."${kelas}",kelas.eq."Kelas ${kelas}"`)
         .order('timestamp', { ascending: false });
 
       if (error) throw error;
@@ -117,10 +161,12 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
                   }
                   pelanggaranMap[d.student].totalPoin += poin;
                   pelanggaranMap[d.student].rincian.push({
+                    id: j.id,
                     date: new Date(j.timestamp).toLocaleDateString('id-ID'),
                     type: d.type,
                     poin: poin,
-                    guru: j.nama_guru
+                    guru: j.nama_guru,
+                    penanganan: d.penanganan || null
                   });
                 }
               });
@@ -161,7 +207,7 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
       kelas: kelas,
       pembelajaran: [{ mataPelajaran: 'Pelanggaran', jamPembelajaran: [], materi: 'Catatan Pelanggaran' }],
       ketidakhadiran: {},
-      catatan: [{ type: pelanggaranDesc, student: selectedSiswa }],
+      catatan: [{ type: pelanggaranDesc, student: selectedSiswa, penanganan: penanganan ? 'Sudah Ditangani' : null }],
       kebersihanKelas: 'sudah_bersih',
       validasi: { status: 'Tidak Tervalidasi', guruPiketInval: '' }
     };
@@ -180,6 +226,7 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
           setKelas('');
           setSelectedSiswa('');
           setPelanggaranDesc('');
+          setPenanganan(false);
         }, 3000);
       } else {
         alert('Gagal menyimpan pelanggaran: ' + data.message);
@@ -292,6 +339,18 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
               </select>
             </div>
 
+            <div>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  checked={penanganan}
+                  onChange={(e) => setPenanganan(e.target.checked)}
+                  className="w-5 h-5 text-red-600 border-slate-300 rounded focus:ring-red-500"
+                />
+                <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Tandai sudah ditangani</span>
+              </label>
+            </div>
+
             <button
               type="submit"
               disabled={loading || !kelas || !selectedSiswa || !pelanggaranDesc}
@@ -328,24 +387,54 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
             ) : rekapData.length === 0 ? (
                <div className="text-center p-8 text-slate-500">Tidak ada data pelanggaran di kelas ini.</div>
             ) : (
-               <div className="space-y-4">
+               <div className="space-y-6">
                   {rekapData.map((item, idx) => (
-                     <div key={idx} className="border border-slate-200 dark:border-slate-700 rounded-xl p-4">
-                        <div className="flex justify-between items-center mb-3">
+                     <div key={idx} className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden shadow-sm">
+                        <div className="flex justify-between items-center p-6 bg-white dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700">
                            <h4 className="font-bold text-lg text-slate-800 dark:text-white">{item.nama}</h4>
-                           <div className="bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 font-bold px-3 py-1 rounded-lg">
+                           <div className="bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 font-bold px-4 py-2 rounded-lg">
                              Total: {item.totalPoin} Poin
                            </div>
                         </div>
-                        <ul className="space-y-2">
-                           {item.rincian.map((r: any, rIdx: number) => (
-                              <li key={rIdx} className="text-sm flex flex-col md:flex-row md:items-start gap-1 p-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
-                                 <span className="text-slate-500 min-w-[100px]">{r.date}</span>
-                                 <span className="text-slate-700 dark:text-slate-300 flex-1">{r.type}</span>
-                                 <span className="text-xs text-slate-500">Pelapor: {r.guru}</span>
-                              </li>
-                           ))}
-                        </ul>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left text-sm text-slate-600 dark:text-slate-400">
+                            <thead className="bg-slate-50 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300">
+                              <tr>
+                                <th className="px-6 py-4 font-semibold">Tanggal</th>
+                                <th className="px-6 py-4 font-semibold">Pelanggaran</th>
+                                <th className="px-6 py-4 font-semibold">Poin</th>
+                                <th className="px-6 py-4 font-semibold">Guru Pelapor</th>
+                                <th className="px-6 py-4 font-semibold">Status Penanganan</th>
+                                <th className="px-6 py-4 font-semibold text-right">Aksi</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-slate-800">
+                              {item.rincian.map((r: any, rIdx: number) => (
+                                <tr key={rIdx} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                  <td className="px-6 py-4 whitespace-nowrap">{r.date}</td>
+                                  <td className="px-6 py-4 max-w-xs">{r.type}</td>
+                                  <td className="px-6 py-4 font-bold text-red-600">{r.poin}</td>
+                                  <td className="px-6 py-4 whitespace-nowrap">{r.guru}</td>
+                                  <td className="px-6 py-4">
+                                     {r.penanganan ? (
+                                       <span className="px-2 py-1 rounded bg-green-100 text-green-700 text-xs font-medium border border-green-200">Ditangani</span>
+                                     ) : (
+                                       <span className="px-2 py-1 rounded bg-yellow-100 text-yellow-700 text-xs font-medium border border-yellow-200">Belum</span>
+                                     )}
+                                  </td>
+                                  <td className="px-6 py-4 text-right flex justify-end gap-2">
+                                     <button onClick={() => { setEditingItem(r); setEditDesc(r.type); setEditPenanganan(!!r.penanganan); }} className="p-2 bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600 rounded-lg transition-colors">
+                                        <Edit2 className="w-4 h-4" />
+                                     </button>
+                                     <button onClick={() => handleDelete(r.id)} className="p-2 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 rounded-lg transition-colors">
+                                        <Trash2 className="w-4 h-4" />
+                                     </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                      </div>
                   ))}
                </div>
@@ -354,6 +443,51 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
         )}
 
       </main>
+
+      {editingItem && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-xl overflow-hidden">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+              <h3 className="font-bold text-lg text-slate-800 dark:text-white">Edit Pelanggaran</h3>
+              <button onClick={() => setEditingItem(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><X className="w-5 h-5" /></button>
+            </div>
+            <form onSubmit={handleEditSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Jenis Pelanggaran</label>
+                <select 
+                  value={editDesc}
+                  onChange={(e) => setEditDesc(e.target.value)}
+                  className="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 bg-slate-50 dark:bg-slate-700 dark:text-white"
+                  required
+                >
+                  {criteriaList.map((group, idx) => (
+                    <optgroup key={idx} label={group.label}>
+                      {group.options.map((opt) => (
+                        <option key={opt.id} value={opt.desc}>{opt.desc}</option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={editPenanganan}
+                    onChange={(e) => setEditPenanganan(e.target.checked)}
+                    className="w-5 h-5 text-red-600 border-slate-300 rounded focus:ring-red-500"
+                  />
+                  <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Tandai sudah ditangani</span>
+                </label>
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button type="button" onClick={() => setEditingItem(null)} className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600 rounded-xl font-bold transition-colors">Batal</button>
+                <button type="submit" className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold shadow-lg transition-all">Simpan</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
