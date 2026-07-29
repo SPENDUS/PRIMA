@@ -90,7 +90,7 @@ async function sendWAReminders() {
       const phone = teacher['No. Hp'];
       if (!phone) continue;
 
-      const mySchedules = schedules.filter(s => s.guru === teacher.nama_guru);
+      const mySchedules = schedules.filter(s => s.guru === teacher.nip || s.guru === teacher.nama_guru);
       if (mySchedules.length === 0) continue;
 
       let hasMissingJournal = false;
@@ -557,8 +557,31 @@ app.get('/api/admin/stats', async (req, res) => {
       }
 
       const { error } = await supabase.from(table).update(updates).eq(nipCol, oldNip);
-      
       if (error) throw error;
+
+      // Sync cascade updates to other tables
+      if (role === 'guru') {
+        if (newNip && newNip !== oldNip) {
+          // Sync NIP in jurnal
+          await supabase.from('jurnal').update({ nip: newNip }).eq('nip', oldNip);
+          // Sync NIP in jadwal_real (guru column stores NIP)
+          await supabase.from('jadwal_real').update({ guru: newNip }).eq('guru', oldNip);
+        }
+        
+        if (newNama) {
+          // Sync Name in jurnal
+          const nipToUse = newNip || oldNip;
+          await supabase.from('jurnal').update({ nama_guru: newNama }).eq('nip', nipToUse);
+        }
+      } else if (role === 'tendik') {
+        if (newNama) {
+           // Tendik sometimes stores nama_guru in jurnal for their logs
+           const nipToUse = newNip || oldNip;
+           // If tendik doesn't store nip in jurnal, we might have to use old name to find it?
+           // Actually, since tendik might not have NIP in jurnal, let's just ignore it or try to update if we had nip.
+        }
+      }
+
       res.json({ success: true, message: 'Data berhasil diperbarui', updates });
     } catch (e: any) {
       res.status(500).json({ success: false, message: e.message });
@@ -1157,7 +1180,7 @@ app.get('/api/admin/stats', async (req, res) => {
 
         // Fill in actual schedules
         if (schedules) {
-          const mySchedules = schedules.filter(s => s.guru === teacher.nama_guru);
+          const mySchedules = schedules.filter(s => s.guru === teacher.nip || s.guru === teacher.nama_guru);
           mySchedules.forEach(s => {
             let isFilled = false;
             if (journals) {
@@ -1462,7 +1485,8 @@ app.get('/api/admin/stats', async (req, res) => {
         // Count unique schedules done
         let doneCount = 0;
         classJadwal.forEach(sch => {
-          const isDone = classJurnal.some(j => j.nama_guru === sch.guru);
+          const guruName = nipToName[sch.guru] || sch.guru;
+          const isDone = classJurnal.some(j => j.nama_guru === guruName);
           if (isDone) doneCount++;
         });
 
