@@ -13,9 +13,23 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
   const [showSuccess, setShowSuccess] = useState(false);
   const [activeTab, setActiveTab] = useState('input');
   const [rekapData, setRekapData] = useState<any[]>([]);
-  const [editingItem, setEditingItem] = useState<any>(null);
+    const [editingItem, setEditingItem] = useState<any>(null);
   const [editDesc, setEditDesc] = useState('');
   const [editPenanganan, setEditPenanganan] = useState(false);
+  const [kategori, setKategori] = useState('');
+  const [editKategori, setEditKategori] = useState('');
+
+  const handleEditClick = (r: any) => {
+    setEditingItem(r);
+    setEditDesc(r.type);
+    setEditPenanganan(!!r.penanganan);
+    const foundCat = criteriaList.find(c => c.options.some(o => o.desc === r.type));
+    if (foundCat) {
+      setEditKategori(foundCat.label);
+    } else {
+      setEditKategori('');
+    }
+  };
 
   const handleDelete = async (id: number) => {
     if (!window.confirm('Yakin ingin menghapus pelanggaran ini?')) return;
@@ -60,60 +74,60 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
 
 
   const criteriaList = [
-    { label: "Kriteria A (Pelanggaran Berat)", options: [
-      { id: "A1", desc: "A1: Terbukti membawa/memakai/mengedarkan narkoba dan miras (50 poin)" },
-      { id: "A2", desc: "A2: Berbuat asusila/tidak senonoh/berpacaran/bermesraan di lingkungan sekolah (40 poin)" },
-      { id: "A3", desc: "A3: Menyerang guru atau personil sekolah lainnya (30 poin)" },
-      { id: "A4", desc: "A4: Mencuri, menarget (memalak) mengambil uang atau barang di sekolah (30 poin)" },
-      { id: "A5", desc: "A5: Membawa vcd, buku, film, file, laptop, tablet, HP, dll yang berisi pornografi (20 poin)" },
-      { id: "A6", desc: "A6: Berjudi di lingkungan sekolah (20 poin)" },
-      { id: "A7", desc: "A7: Berkelahi di dalam maupun di luar sekolah (20 poin)" },
-      { id: "A8", desc: "A8: Membawa dan atau merokok di lingkungan sekolah (20 poin)" },
-      { id: "A9", desc: "A9: Badan bertato, hidung bertindik, telinga bertindik (putra) (15 poin)" },
-      { id: "A10", desc: "A10: Membawa senjata tajam atau peralatan yang membahayakan orang lain (15 poin)" },
-      { id: "A11", desc: "A11: Melakukan konvoi motor/balap motor/terlibat gang motor dll. (15 poin)" },
-      { id: "A12", desc: "A12: Merusak sarana/prasarana sekolah (15 poin)" },
-      { id: "A13", desc: "A13: Membawa dan atau menyalakan petasan/mercon (10 poin)" },
-      { id: "A14", desc: "A14: Bersikap tidak sopan, kuarang ajar terhadap guru, personil sekolah dan tamu (10 poin)" },
-      { id: "A15", desc: "A15: Melompat pagar / meninggalkan sekolah sebelum kegiatan sekolah berakhir (10 poin)" },
-      { id: "A16", desc: "A16: Merusak, menjahili, mengambil tanaman di lingkungan sekolah (10 poin)" }
+    { label: "Pelanggaran Ringan (1 - 2 Poin)", options: [
+      { id: "C1", desc: "Tidak mengerjakan Tugas/PR (2 poin)" },
+      { id: "C2", desc: "Tidak ikut ekskul wajib (2 poin)" },
+      { id: "C3", desc: "Seragam/sepatu tidak sesuai (2 poin)" },
+      { id: "C4", desc: "Atribut seragam tidak lengkap (2 poin)" },
+      { id: "C5", desc: "Bersolek/perhiasan berlebih (2 poin)" },
+      { id: "C6", desc: "Menyembunyikan logo kaos kaki (2 poin)" },
+      { id: "C7", desc: "Pakaian tidak sopan/ketat (2 poin)" },
+      { id: "C8", desc: "Tidak menata alat sholat (1 poin)" },
+      { id: "C9", desc: "Sepatu naik batas suci masjid (1 poin)" },
+      { id: "C10", desc: "Duduk di parkiran saat istirahat (1 poin)" },
+      { id: "C11", desc: "Keluar kelas saat pelajaran (1 poin)" },
+      { id: "C12", desc: "Ramai/tidak tertib di kelas (1 poin)" },
+      { id: "C13", desc: "Buang sampah sembarangan (1 poin)" },
+      { id: "C14", desc: "Tidak ikut piket kebersihan (1 poin)" },
+      { id: "C15", desc: "Tidak ikut program Jumat (1 poin)" }
     ]},
-    { label: "Kriteria B (Pelanggaran Sedang)", options: [
-      { id: "B1a", desc: "B1: Datang terlambat lebih dari 5 menit (1-3 kali) - 2 poin" },
-      { id: "B1b", desc: "B1: Datang terlambat lebih dari 5 menit (4-6 kali) - 4 poin" },
-      { id: "B1c", desc: "B1: Datang terlambat lebih dari 5 menit (>7 kali) - 8 poin" },
-      { id: "B2a", desc: "B2: Tidak masuk sekolah tanpa keterangan (1-3 kali) - 2 poin" },
-      { id: "B2b", desc: "B2: Tidak masuk sekolah tanpa keterangan (4-6 kali) - 4 poin" },
-      { id: "B2c", desc: "B2: Tidak masuk sekolah tanpa keterangan (7-9 kali) - 8 poin" },
-      { id: "B2d", desc: "B2: Tidak masuk sekolah tanpa keterangan (>10 kali) - 10 poin" },
-      { id: "B3", desc: "B3: Membawa HP di lingkungan sekolah (HP disita dikembalikan ketika kenaikan kelas) (5 poin)" },
-      { id: "B4", desc: "B4: Menggunakan laptop/tablet dll untuk bermain/games di lingkungan sekolah (5 poin)" },
-      { id: "B5", desc: "B5: Membawa kendaraan bermotor di area sekolah (5 poin)" },
-      { id: "B6", desc: "B6: Mengancam atau mengintimidasi (membully) teman (5 poin)" },
-      { id: "B7", desc: "B7: Memutar film (bukan pelajaran) di lingkungan sekolah (5 poin)" },
-      { id: "B9", desc: "B9: Mengumpat atau berkata jorok/kotor atau menghina orang tua teman (5 poin)" },
-      { id: "B10", desc: "B10: Bermain bola di dalam/di sekitar kelas (5 poin)" },
-      { id: "B11", desc: "B11: Rambut panjang/tidak rapi(putra), rambut diwarna, kuku panjang, kuku diwarna (5 poin)" },
-      { id: "B12", desc: "B12: Mencoret-coret baju pada saat pengumuman kelulusan (5 poin)" },
-      { id: "B13", desc: "B13: Tidak mengikuti upacara tanpa ijin (3 poin)" },
-      { id: "B14", desc: "B14: Berolahraga tidak menggunakan kaos/seragam olahraga (3 poin)" }
+    { label: "Pelanggaran Sedang (2 - 10 Poin)", options: [
+      { id: "B1a", desc: "Terlambat >5 menit (1-3x) - 2 poin" },
+      { id: "B1b", desc: "Terlambat >5 menit (4-6x) - 4 poin" },
+      { id: "B1c", desc: "Terlambat >5 menit (>7x) - 8 poin" },
+      { id: "B2a", desc: "Alpa/Tanpa keterangan (1-3x) - 2 poin" },
+      { id: "B2b", desc: "Alpa/Tanpa keterangan (4-6x) - 4 poin" },
+      { id: "B2c", desc: "Alpa/Tanpa keterangan (7-9x) - 8 poin" },
+      { id: "B2d", desc: "Alpa/Tanpa keterangan (>10x) - 10 poin" },
+      { id: "B3", desc: "Membawa HP ke sekolah (5 poin)" },
+      { id: "B4", desc: "Bermain game di perangkat (5 poin)" },
+      { id: "B5", desc: "Membawa motor ke sekolah (5 poin)" },
+      { id: "B6", desc: "Membully teman (5 poin)" },
+      { id: "B7", desc: "Memutar film non-pelajaran (5 poin)" },
+      { id: "B9", desc: "Berkata kotor/mengumpat (5 poin)" },
+      { id: "B10", desc: "Bermain bola di sekitar kelas (5 poin)" },
+      { id: "B11", desc: "Rambut/kuku panjang, diwarnai (5 poin)" },
+      { id: "B12", desc: "Coret seragam saat lulus (5 poin)" },
+      { id: "B13", desc: "Tidak ikut upacara tanpa ijin (3 poin)" },
+      { id: "B14", desc: "Olahraga tanpa seragam (3 poin)" }
     ]},
-    { label: "Kriteria C (Pelanggaran Ringan)", options: [
-      { id: "C1", desc: "C1: Tidak mengerjakan tugas yang diberikan guru di dalam kelas maupun PR di rumah (2 poin)" },
-      { id: "C2", desc: "C2: Tidak hadir dalam kegiatan ekstra kurikuler wajib dan yang diwajibkan sekolah (2 poin)" },
-      { id: "C3", desc: "C3: Tidak memakai seragam yang sesuai / sepatu tidak hitam /sabuk/kaos kaki tidak sesuai dan tidak rapi bajunya(dikeluarkan bajunya) (2 poin)" },
-      { id: "C4", desc: "C4: Seragam tidak lengkap (topi, dasi, atribut, nama dada, ikat pinggang, dll) (2 poin)" },
-      { id: "C5", desc: "C5: Bersolek berlebihan, memakai perhiasan mewah memakai hena atau pewarna kuku (2 poin)" },
-      { id: "C6", desc: "C6: Memakai kaos kaki dengan Logo SMP disembunyikan/diturunkan (2 poin)" },
-      { id: "C7", desc: "C7: Model pakaian seragam tidak sesuai/tidak sopan (model rok/celana pinggul, di atas lutut) dll. (2 poin)" },
-      { id: "C8", desc: "C8: Tidak menata kembali sarung atau mukenah setelah selesai menggunakannya (1 poin)" },
-      { id: "C9", desc: "C9: Sepatu menginjak/naik ke lantai trap (suci) musholla (1 poin)" },
-      { id: "C10", desc: "C10: Duduk-duduk di area parkir motor/mobil guru/karyawan ketika istirahat (1 poin)" },
-      { id: "C11", desc: "C11: Berada diluar kelas ketika Jam Pembelajaran (1 poin)" },
-      { id: "C12", desc: "C12: Tidak tertib di dalam kelas, ramai, dan berbicara sendiri (1 poin)" },
-      { id: "C13", desc: "C13: Membuang sampah tidak di tempat sampah (1 poin)" },
-      { id: "C14", desc: "C14: Tidak melakukan piket kebersihan (1 poin)" },
-      { id: "C15", desc: "C15: Tidak mengikuti kegiatan Jumat Bersih, Jumat Sehat dan Jumat Religi (1 poin)" }
+    { label: "Pelanggaran Berat (10 - 50 Poin)", options: [
+      { id: "A1", desc: "Narkoba & Miras (50 poin)" },
+      { id: "A2", desc: "Tindakan asusila di sekolah (40 poin)" },
+      { id: "A3", desc: "Menyerang guru/staf sekolah (30 poin)" },
+      { id: "A4", desc: "Mencuri atau memalak (30 poin)" },
+      { id: "A5", desc: "Membawa konten pornografi (20 poin)" },
+      { id: "A6", desc: "Berjudi di sekolah (20 poin)" },
+      { id: "A7", desc: "Berkelahi (20 poin)" },
+      { id: "A8", desc: "Membawa/merokok di sekolah (20 poin)" },
+      { id: "A9", desc: "Tato atau tindik (15 poin)" },
+      { id: "A10", desc: "Membawa senjata tajam (15 poin)" },
+      { id: "A11", desc: "Terlibat geng/balap motor (15 poin)" },
+      { id: "A12", desc: "Merusak fasilitas sekolah (15 poin)" },
+      { id: "A13", desc: "Membawa petasan (10 poin)" },
+      { id: "A14", desc: "Tidak sopan pada guru/staf (10 poin)" },
+      { id: "A15", desc: "Bolos sekolah/lompat pagar (10 poin)" },
+      { id: "A16", desc: "Merusak tanaman sekolah (10 poin)" }
     ]}
   ];
 
@@ -321,23 +335,39 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
             )}
 
             <div>
-              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Jenis Pelanggaran</label>
+              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Kategori Pelanggaran</label>
               <select 
-                value={pelanggaranDesc}
-                onChange={(e) => setPelanggaranDesc(e.target.value)}
+                value={kategori}
+                onChange={(e) => {
+                  setKategori(e.target.value);
+                  setPelanggaranDesc('');
+                }}
                 className="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 bg-slate-50 dark:bg-slate-700 dark:text-white"
                 required
               >
-                <option value="">-- Pilih Jenis Pelanggaran --</option>
+                <option value="">-- Pilih Kategori --</option>
                 {criteriaList.map((group, idx) => (
-                  <optgroup key={idx} label={group.label}>
-                    {group.options.map((opt) => (
-                      <option key={opt.id} value={opt.desc}>{opt.desc}</option>
-                    ))}
-                  </optgroup>
+                  <option key={idx} value={group.label}>{group.label}</option>
                 ))}
               </select>
             </div>
+
+            {kategori && (
+              <div>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Jenis Pelanggaran</label>
+                <select 
+                  value={pelanggaranDesc}
+                  onChange={(e) => setPelanggaranDesc(e.target.value)}
+                  className="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 bg-slate-50 dark:bg-slate-700 dark:text-white"
+                  required
+                >
+                  <option value="">-- Pilih Jenis Pelanggaran --</option>
+                  {criteriaList.find(c => c.label === kategori)?.options.map((opt) => (
+                    <option key={opt.id} value={opt.desc}>{opt.desc}</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div>
               <label className="flex items-center gap-3 cursor-pointer">
@@ -423,7 +453,7 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
                                      )}
                                   </td>
                                   <td className="px-6 py-4 text-right flex justify-end gap-2">
-                                     <button onClick={() => { setEditingItem(r); setEditDesc(r.type); setEditPenanganan(!!r.penanganan); }} className="p-2 bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600 rounded-lg transition-colors">
+                                     <button onClick={() => handleEditClick(r)} className="p-2 bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600 rounded-lg transition-colors">
                                         <Edit2 className="w-4 h-4" />
                                      </button>
                                      <button onClick={() => handleDelete(r.id)} className="p-2 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 rounded-lg transition-colors">
@@ -453,22 +483,39 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
             </div>
             <form onSubmit={handleEditSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Jenis Pelanggaran</label>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Kategori Pelanggaran</label>
                 <select 
-                  value={editDesc}
-                  onChange={(e) => setEditDesc(e.target.value)}
+                  value={editKategori}
+                  onChange={(e) => {
+                    setEditKategori(e.target.value);
+                    setEditDesc('');
+                  }}
                   className="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 bg-slate-50 dark:bg-slate-700 dark:text-white"
                   required
                 >
+                  <option value="">-- Pilih Kategori --</option>
                   {criteriaList.map((group, idx) => (
-                    <optgroup key={idx} label={group.label}>
-                      {group.options.map((opt) => (
-                        <option key={opt.id} value={opt.desc}>{opt.desc}</option>
-                      ))}
-                    </optgroup>
+                    <option key={idx} value={group.label}>{group.label}</option>
                   ))}
                 </select>
               </div>
+              
+              {editKategori && (
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Jenis Pelanggaran</label>
+                  <select 
+                    value={editDesc}
+                    onChange={(e) => setEditDesc(e.target.value)}
+                    className="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 bg-slate-50 dark:bg-slate-700 dark:text-white"
+                    required
+                  >
+                    <option value="">-- Pilih Jenis Pelanggaran --</option>
+                    {criteriaList.find(c => c.label === editKategori)?.options.map((opt) => (
+                      <option key={opt.id} value={opt.desc}>{opt.desc}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div>
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input 
