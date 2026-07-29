@@ -5,7 +5,8 @@ import { supabase } from '../lib/supabase';
 export default function RekapAbsensi({ user, onNavigate }: { user: any, onNavigate: (page: string) => void }) {
   const [kelas, setKelas] = useState('');
   const [availableClasses, setAvailableClasses] = useState<string[]>([]);
-  const [filterTanggal, setFilterTanggal] = useState(new Date().toISOString().split('T')[0]);
+  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
+  const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
   const [rekapData, setRekapData] = useState<any[]>([]);
   const [summary, setSummary] = useState({ hadirPercent: 0, izin: 0, sakit: 0, alpha: 0, dispensasi: 0 });
   const [loading, setLoading] = useState(false);
@@ -72,139 +73,129 @@ export default function RekapAbsensi({ user, onNavigate }: { user: any, onNaviga
     const fetchData = async () => {
       if (!kelas) return;
       setLoading(true);
-
       try {
-        // 1. Fetch all students in the class
         const { data: studentsData, error: studentsError } = await supabase
           .from('murid')
           .select('"NISN", "Nama Lengkap", "Kelas"')
           .eq('"Kelas"', kelas);
 
         if (studentsError) throw studentsError;
-
         const students = studentsData || [];
+
         const studentMap: Record<string, any> = {};
         students.forEach(s => {
           studentMap[s['Nama Lengkap']] = {
             nisn: s.NISN,
             nama: s['Nama Lengkap'],
-            s: 0, i: 0, a: 0, d: 0, h: 0,
-            finalStatus: 'H' // Default to Hadir
+            s: 0, i: 0, a: 0, d: 0, h: 0
           };
         });
 
-        // 2. Fetch jurnal for attendance
-        let jurnalQuery = supabase.from('jurnal').select('timestamp, ketidakhadiran, jam_pembelajaran').eq('kelas', kelas);
-        const { data: jurnalData, error: jurnalError } = await jurnalQuery;
+        const jurnalKelas = String(kelas).toUpperCase().replace('KELAS', '').trim();
+        const { data: jurnalData, error: jurnalError } = await supabase.from('jurnal').select('timestamp, ketidakhadiran, jam_pembelajaran').eq('kelas', jurnalKelas);
         if (jurnalError) throw jurnalError;
 
-        // Filter by date
-        const filteredJurnalData = (jurnalData || []).filter(record => {
-          const recordDate = new Date(record.timestamp).toLocaleDateString('en-CA'); // YYYY-MM-DD local
-          // Also check split('T')[0] just in case
+        // Group by Date
+        const recordsByDate: Record<string, any[]> = {};
+        
+        (jurnalData || []).forEach(record => {
           const altDate = record.timestamp.split('T')[0];
-          return recordDate === filterTanggal || altDate === filterTanggal;
-        });
-
-        let totalDayJP = 0;
-        const studentAbsentJP: Record<string, number> = {};
-        const studentStatuses: Record<string, Set<string>> = {};
-
-        Object.keys(studentMap).forEach(name => {
-          studentAbsentJP[name] = 0;
-          studentStatuses[name] = new Set();
-        });
-
-        filteredJurnalData.forEach(record => {
-          let jpCount = 1;
-          if (record.jam_pembelajaran) {
-            jpCount = String(record.jam_pembelajaran).split(',').filter(s => s.trim() !== '').length;
-            if (jpCount === 0) jpCount = 1;
-          }
-          totalDayJP += jpCount;
-
+          let recordDate = altDate;
           try {
-            const absents = typeof record.ketidakhadiran === 'string' ? JSON.parse(record.ketidakhadiran) : record.ketidakhadiran;
-            if (Array.isArray(absents)) {
-              const countedStudents = new Set();
-              absents.forEach((absentRecord: any) => {
-                if (absentRecord.students && Array.isArray(absentRecord.students)) {
-                  absentRecord.students.forEach((studentName: string) => {
-                    if (studentMap[studentName] && !countedStudents.has(studentName)) {
-                      countedStudents.add(studentName);
-                      
-                      studentAbsentJP[studentName] = (studentAbsentJP[studentName] || 0) + jpCount;
-
-                      if (absentRecord.type === 'Sakit') {
-                        studentStatuses[studentName].add('S');
-                      } else if (absentRecord.type === 'Izin') {
-                        studentStatuses[studentName].add('I');
-                      } else if (absentRecord.type === 'Alpa' || absentRecord.type === 'Tidak Hadir') {
-                        studentStatuses[studentName].add('A');
-                      } else if (absentRecord.type === 'Dispensasi') {
-                        studentStatuses[studentName].add('D');
-                      }
-                    }
-                  });
-                }
-              });
-            }
-          } catch (e) {}
-        });
-
-        // Process daily statuses to calculate final status for the day
-        Object.keys(studentMap).forEach(studentName => {
-          const statuses = studentStatuses[studentName];
-          const absentJP = studentAbsentJP[studentName];
+             recordDate = new Date(record.timestamp).toLocaleDateString('en-CA');
+          } catch(e) {}
           
-          // If student was absent for fewer JPs than the total JPs for the day, they have an implicit 'H'
-          if (totalDayJP > 0 && absentJP < totalDayJP) {
-            statuses.add('H');
-          }
-
-          if (statuses.has('S')) {
-            studentMap[studentName].finalStatus = 'S';
-          } else if (statuses.has('I')) {
-            studentMap[studentName].finalStatus = 'I';
-          } else if (statuses.has('D')) {
-            studentMap[studentName].finalStatus = 'D';
-          } else if (statuses.has('A') && !statuses.has('H')) {
-            studentMap[studentName].finalStatus = 'A';
-          } else {
-            studentMap[studentName].finalStatus = 'H';
+          if (recordDate >= startDate && recordDate <= endDate) {
+             if (!recordsByDate[recordDate]) recordsByDate[recordDate] = [];
+             recordsByDate[recordDate].push(record);
           }
         });
 
-        const resultData = Object.values(studentMap).map(student => {
-          return {
-            ...student,
-            s_display: student.finalStatus === 'S' ? '✓' : '',
-            i_display: student.finalStatus === 'I' ? '✓' : '',
-            a_display: student.finalStatus === 'A' ? '✓' : '',
-            d_display: student.finalStatus === 'D' ? '✓' : '',
-            ket: student.finalStatus === 'H' ? 'Hadir' : ''
-          };
-        });
+        const allDates = Object.keys(recordsByDate);
+        const dateCount = allDates.length;
 
-        // Sort by name
-        resultData.sort((a, b) => a.nama.localeCompare(b.nama));
+        allDates.forEach(date => {
+          const dailyRecords = recordsByDate[date];
+          let totalDayJP = 0;
+          const studentAbsentJP: Record<string, number> = {};
+          const studentStatuses: Record<string, Set<string>> = {};
+          
+          Object.keys(studentMap).forEach(name => {
+            studentAbsentJP[name] = 0;
+            studentStatuses[name] = new Set();
+          });
+
+          dailyRecords.forEach(record => {
+            let jpCount = 1;
+            if (record.jam_pembelajaran) {
+              jpCount = String(record.jam_pembelajaran).split(',').filter(s => s.trim() !== '').length;
+              if (jpCount === 0) jpCount = 1;
+            }
+            totalDayJP += jpCount;
+
+            try {
+              const absents = typeof record.ketidakhadiran === 'string' ? JSON.parse(record.ketidakhadiran) : record.ketidakhadiran;
+              if (Array.isArray(absents)) {
+                const countedStudents = new Set();
+                absents.forEach((absentRecord: any) => {
+                  if (absentRecord.students && Array.isArray(absentRecord.students)) {
+                    absentRecord.students.forEach((studentName: string) => {
+                      if (studentMap[studentName] && !countedStudents.has(studentName)) {
+                        countedStudents.add(studentName);
+                        studentAbsentJP[studentName] = (studentAbsentJP[studentName] || 0) + jpCount;
+                        if (absentRecord.type === 'Sakit') studentStatuses[studentName].add('S');
+                        else if (absentRecord.type === 'Izin') studentStatuses[studentName].add('I');
+                        else if (absentRecord.type === 'Alpa' || absentRecord.type === 'Tidak Hadir') studentStatuses[studentName].add('A');
+                        else if (absentRecord.type === 'Dispensasi') studentStatuses[studentName].add('D');
+                      }
+                    });
+                  }
+                });
+              }
+            } catch (e) {}
+          });
+
+          Object.keys(studentMap).forEach(studentName => {
+            const statuses = studentStatuses[studentName];
+            const absentJP = studentAbsentJP[studentName];
+            
+            if (totalDayJP > 0 && absentJP < totalDayJP) statuses.add('H');
+
+            if (statuses.has('S')) studentMap[studentName].s += 1;
+            else if (statuses.has('I')) studentMap[studentName].i += 1;
+            else if (statuses.has('D')) studentMap[studentName].d += 1;
+            else if (statuses.has('A') && !statuses.has('H')) studentMap[studentName].a += 1;
+            else studentMap[studentName].h += 1; // Hadir
+          });
+        });
 
         let totalSakit = 0;
         let totalIzin = 0;
         let totalAlpha = 0;
         let totalDispensasi = 0;
         let totalHadir = 0;
-
-        resultData.forEach(m => {
-          if (m.finalStatus === 'S') totalSakit++;
-          else if (m.finalStatus === 'I') totalIzin++;
-          else if (m.finalStatus === 'A') totalAlpha++;
-          else if (m.finalStatus === 'D') totalDispensasi++;
-          else totalHadir++;
+        
+        const resultData = Object.values(studentMap).map(student => {
+          totalSakit += student.s;
+          totalIzin += student.i;
+          totalAlpha += student.a;
+          totalDispensasi += student.d;
+          totalHadir += student.h;
+          
+          return {
+            ...student,
+            s_display: student.s > 0 ? student.s : '',
+            i_display: student.i > 0 ? student.i : '',
+            a_display: student.a > 0 ? student.a : '',
+            d_display: student.d > 0 ? student.d : '',
+            ket: dateCount === 0 ? 'Belum ada data' : ((student.s === 0 && student.i === 0 && student.a === 0 && student.d === 0) ? 'Hadir' : '')
+          };
         });
 
-        const totalStudents = resultData.length;
-        const hadirPercent = totalStudents > 0 ? Math.round((totalHadir / totalStudents) * 100) : 100;
+        resultData.sort((a, b) => a.nama.localeCompare(b.nama));
+
+        const totalStudentDays = resultData.length * (dateCount > 0 ? dateCount : 1);
+        const hadirPercent = dateCount === 0 ? 0 : (totalStudentDays > 0 ? Math.round((totalHadir / totalStudentDays) * 100) : 100);
 
         setSummary({
           hadirPercent,
@@ -223,7 +214,7 @@ export default function RekapAbsensi({ user, onNavigate }: { user: any, onNaviga
     };
 
     fetchData();
-  }, [kelas, filterTanggal]);
+  }, [kelas, startDate, endDate]);
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-slate-50 dark:bg-slate-900 transition-colors">
@@ -254,11 +245,20 @@ export default function RekapAbsensi({ user, onNavigate }: { user: any, onNaviga
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Tanggal</label>
+                <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Dari Tanggal</label>
                 <input 
                   type="date"
-                  value={filterTanggal}
-                  onChange={e => setFilterTanggal(e.target.value)}
+                  value={startDate}
+                  onChange={e => setStartDate(e.target.value)}
+                  className="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 bg-slate-50 dark:bg-slate-700 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Sampai Tanggal</label>
+                <input 
+                  type="date"
+                  value={endDate}
+                  onChange={e => setEndDate(e.target.value)}
                   className="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 bg-slate-50 dark:bg-slate-700 dark:text-white"
                 />
               </div>
@@ -305,7 +305,7 @@ export default function RekapAbsensi({ user, onNavigate }: { user: any, onNaviga
                 <h1 className="text-2xl font-bold uppercase">{schoolName}</h1>
                 <p className="text-sm">Laporan Kehadiran Murid Harian</p>
                 <p className="text-sm mt-2">Kelas: {kelas}</p>
-                <p className="text-sm">Tanggal: {new Date(filterTanggal).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <p className="text-sm">Tanggal: {new Date(startDate).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })} - {new Date(endDate).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
               </div>
 
               {loading ? (

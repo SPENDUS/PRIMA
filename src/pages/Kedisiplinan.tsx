@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Calendar, Search, X } from 'lucide-react';
+import { ArrowLeft, Calendar, Search, X, Printer } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -106,7 +106,7 @@ export default function Kedisiplinan({ user, onNavigate }: { user: any, onNaviga
         const { data: studentsData, error: studentsError } = await supabase
           .from('murid')
           .select('"NISN", "Nama Lengkap", "Kelas"')
-          .eq('"Kelas"', kelas);
+          .eq('"Kelas"', 'Kelas ' + kelas);
 
         if (studentsError) throw studentsError;
 
@@ -255,9 +255,10 @@ export default function Kedisiplinan({ user, onNavigate }: { user: any, onNaviga
       </header>
       
       <main className="flex-grow p-4 md:p-6 mt-4">
-        <div className="max-w-7xl mx-auto bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-700">
-          <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
+        <div className="max-w-7xl mx-auto space-y-6">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 print:hidden flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap gap-4 w-full md:w-auto flex-1">
+            <div className="flex-1 min-w-[200px]">
               <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Pilih Kelas</label>
               <select 
                 value={kelas} 
@@ -289,8 +290,17 @@ export default function Kedisiplinan({ user, onNavigate }: { user: any, onNaviga
               />
             </div>
           </div>
+          <button
+            onClick={() => window.print()}
+            disabled={!kelas}
+            className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-xl font-bold flex items-center justify-center gap-2 shadow-sm transition-colors disabled:opacity-50 mt-4 md:mt-0"
+          >
+            <Printer className="w-5 h-5" /> Cetak
+          </button>
+        </div>
 
-          <div className="border-b border-slate-200 dark:border-slate-700 mb-6">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 print:border-none print:shadow-none print:p-0">
+          <div className="border-b border-slate-200 dark:border-slate-700 mb-6 print:hidden">
             <nav className="-mb-px flex space-x-8">
               <button 
                 onClick={() => setTab('absensi')}
@@ -384,6 +394,7 @@ export default function Kedisiplinan({ user, onNavigate }: { user: any, onNaviga
               )}
             </div>
           )}
+        </div>
         </div>
       </main>
 

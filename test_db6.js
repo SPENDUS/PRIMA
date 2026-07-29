@@ -5,7 +5,8 @@ dotenv.config();
 const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.VITE_SUPABASE_ANON_KEY);
 
 async function test() {
-  const { data, error } = await supabase.from('murid').select('"Kelas"').limit(10);
+  const kelas = '9B';
+  const { data, error } = await supabase.from('murid').select('"NISN", "Nama Lengkap", "Kelas"').eq('"Kelas"', kelas);
   console.log(error, data);
 }
 test();
