@@ -720,17 +720,17 @@ app.get('/api/admin/stats', async (req, res) => {
     // materi = aktivitas
     
     const { error } = await supabase.from('jurnal').insert({
+        nip: nip,
         nama_guru: nama,
         kelas: 'Tendik',
         mata_pelajaran: 'Aktivitas Harian',
         materi: aktivitas,
         jam_pembelajaran: '-',
-        jumlah_jam: 0,
-        siswa_hadir: 0,
-        siswa_ijin: 0,
-        siswa_sakit: 0,
-        siswa_alpha: 0,
+        ketidakhadiran: 'Nihil',
+        catatan_mengajar: 'Nihil',
         kebersihan_kelas: 'Baik',
+        validasi: 'Belum',
+        guru_piket_inval: '-',
         timestamp: new Date().toISOString() // Use current time or passed date
     });
 
