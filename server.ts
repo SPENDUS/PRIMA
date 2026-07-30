@@ -339,17 +339,26 @@ app.get('/api/admin/stats', async (req, res) => {
             const absenList = typeof j.ketidakhadiran === 'string' ? JSON.parse(j.ketidakhadiran) : j.ketidakhadiran;
             if (Array.isArray(absenList)) {
               absenList.forEach((absenGroup: any) => {
-                const type = absenGroup.type || 'Tidak Hadir';
-                const students = absenGroup.students || [];
-                students.forEach((studentName: string) => {
+                if (absenGroup.students && Array.isArray(absenGroup.students)) {
+                  absenGroup.students.forEach((studentName: string) => {
+                    if (!absentStudents.some(s => s.name === studentName && s.class === j.kelas)) {
+                      absentStudents.push({
+                        name: studentName,
+                        class: j.kelas,
+                        reason: absenGroup.type || 'Tidak Hadir'
+                      });
+                    }
+                  });
+                } else if (absenGroup.nama || absenGroup.namaLengkap) {
+                  const studentName = absenGroup.nama || absenGroup.namaLengkap;
                   if (!absentStudents.some(s => s.name === studentName && s.class === j.kelas)) {
                     absentStudents.push({
                       name: studentName,
                       class: j.kelas,
-                      reason: type
+                      reason: absenGroup.keterangan || absenGroup.ket || 'Tidak Hadir'
                     });
                   }
-                });
+                }
               });
             }
           } catch (e) {
@@ -1256,16 +1265,32 @@ app.get('/api/admin/stats', async (req, res) => {
             const parsed = JSON.parse(j.ketidakhadiran);
             if (Array.isArray(parsed)) {
               parsed.forEach((absent: any) => {
-                const key = `${absent.nama}-${j.kelas}`;
-                if (!attendanceMap[key]) {
-                  attendanceMap[key] = { nama: absent.nama, kelas: j.kelas, s: 0, i: 0, a: 0, total: 0 };
+                if (absent.students && Array.isArray(absent.students)) {
+                  absent.students.forEach((studentName: string) => {
+                    const key = `${studentName}-${j.kelas}`;
+                    if (!attendanceMap[key]) {
+                      attendanceMap[key] = { nama: studentName, kelas: j.kelas, s: 0, i: 0, a: 0, total: 0 };
+                    }
+                    const ket = (absent.type || '').toLowerCase();
+                    if (ket.includes('sakit') || ket === 's') attendanceMap[key].s++;
+                    else if (ket.includes('izin') || ket === 'i') attendanceMap[key].i++;
+                    else if (ket.includes('alpa') || ket.includes('alpha') || ket === 'a') attendanceMap[key].a++;
+                    
+                    attendanceMap[key].total = attendanceMap[key].s + attendanceMap[key].i + attendanceMap[key].a;
+                  });
+                } else if (absent.nama || absent.namaLengkap) {
+                  const studentName = absent.nama || absent.namaLengkap;
+                  const key = `${studentName}-${j.kelas}`;
+                  if (!attendanceMap[key]) {
+                    attendanceMap[key] = { nama: studentName, kelas: j.kelas, s: 0, i: 0, a: 0, total: 0 };
+                  }
+                  const ket = (absent.keterangan || absent.ket || '').toLowerCase();
+                  if (ket.includes('sakit') || ket === 's') attendanceMap[key].s++;
+                  else if (ket.includes('izin') || ket === 'i') attendanceMap[key].i++;
+                  else if (ket.includes('alpa') || ket.includes('alpha') || ket === 'a') attendanceMap[key].a++;
+                  
+                  attendanceMap[key].total = attendanceMap[key].s + attendanceMap[key].i + attendanceMap[key].a;
                 }
-                const ket = (absent.keterangan || '').toLowerCase();
-                if (ket.includes('sakit') || ket === 's') attendanceMap[key].s++;
-                else if (ket.includes('izin') || ket === 'i') attendanceMap[key].i++;
-                else if (ket.includes('alpa') || ket.includes('alpha') || ket === 'a') attendanceMap[key].a++;
-                
-                attendanceMap[key].total = attendanceMap[key].s + attendanceMap[key].i + attendanceMap[key].a;
               });
             }
           } catch (e) {
@@ -1345,20 +1370,29 @@ app.get('/api/admin/stats', async (req, res) => {
             const absenList = typeof j.ketidakhadiran === 'string' ? JSON.parse(j.ketidakhadiran) : j.ketidakhadiran;
             if (Array.isArray(absenList)) {
               absenList.forEach((absenGroup: any) => {
-                const type = absenGroup.type || 'Tidak Hadir';
-                const students = absenGroup.students || [];
-                students.forEach((studentName: string) => {
-                  // Avoid duplicates for the same student on the same day
-                  const dateStr = new Date(j.timestamp).toISOString().split('T')[0];
+                const dateStr = new Date(j.timestamp).toISOString().split('T')[0];
+                if (absenGroup.students && Array.isArray(absenGroup.students)) {
+                  absenGroup.students.forEach((studentName: string) => {
+                    if (!absentStudents.some(s => s.nama === studentName && s.kelas === j.kelas && s.tanggal === dateStr)) {
+                      absentStudents.push({
+                        tanggal: dateStr,
+                        nama: studentName,
+                        kelas: j.kelas,
+                        keterangan: absenGroup.type || 'Tidak Hadir'
+                      });
+                    }
+                  });
+                } else if (absenGroup.nama || absenGroup.namaLengkap) {
+                  const studentName = absenGroup.nama || absenGroup.namaLengkap;
                   if (!absentStudents.some(s => s.nama === studentName && s.kelas === j.kelas && s.tanggal === dateStr)) {
                     absentStudents.push({
                       tanggal: dateStr,
                       nama: studentName,
                       kelas: j.kelas,
-                      keterangan: type
+                      keterangan: absenGroup.keterangan || absenGroup.ket || 'Tidak Hadir'
                     });
                   }
-                });
+                }
               });
             }
           } catch (e) {
@@ -1449,14 +1483,37 @@ app.get('/api/admin/stats', async (req, res) => {
           try {
             const absen = typeof j.ketidakhadiran === 'string' ? JSON.parse(j.ketidakhadiran) : j.ketidakhadiran;
             if (Array.isArray(absen)) {
-              totalKetidakhadiran += absen.length;
               absen.forEach(a => {
-                detailKetidakhadiran.push({
-                  nama: a.nama || a,
-                  kelas: jCls,
-                  guru: j.nama_guru,
-                  mapel: j.pembelajaran
-                });
+                if (a.students && Array.isArray(a.students)) {
+                  totalKetidakhadiran += a.students.length;
+                  a.students.forEach((sName: string) => {
+                    detailKetidakhadiran.push({
+                      nama: sName,
+                      kelas: jCls,
+                      guru: j.nama_guru,
+                      mapel: j.mata_pelajaran || j.pembelajaran,
+                      keterangan: a.type
+                    });
+                  });
+                } else if (a.nama || a.namaLengkap) {
+                  totalKetidakhadiran += 1;
+                  detailKetidakhadiran.push({
+                    nama: a.nama || a.namaLengkap,
+                    kelas: jCls,
+                    guru: j.nama_guru,
+                    mapel: j.mata_pelajaran || j.pembelajaran,
+                    keterangan: a.keterangan || a.ket || 'Tidak Hadir'
+                  });
+                } else if (typeof a === 'string') {
+                  totalKetidakhadiran += 1;
+                  detailKetidakhadiran.push({
+                    nama: a,
+                    kelas: jCls,
+                    guru: j.nama_guru,
+                    mapel: j.mata_pelajaran || j.pembelajaran,
+                    keterangan: 'Tidak Hadir'
+                  });
+                }
               });
             }
           } catch (e) {}
@@ -1887,15 +1944,18 @@ app.get('/api/admin/stats', async (req, res) => {
           if (Array.isArray(absents)) {
             let alreadyCounted = false;
             absents.forEach((record: any) => {
-              if (!alreadyCounted && record.students && record.students.includes(studentName) && !processedPresensiDates.has(date)) {
+              const matchesStudent = (record.students && record.students.includes(studentName)) || 
+                                     (record.nama === studentName || record.namaLengkap === studentName);
+
+              if (!alreadyCounted && matchesStudent && !processedPresensiDates.has(date)) {
                 if (!studentDailyStatus[date]) studentDailyStatus[date] = new Set();
                 studentAbsentJP[date] = (studentAbsentJP[date] || 0) + jpCount;
 
-                let status = record.type || 'Alpa'; // Default to Alpa if type is missing
-                if (status === 'Sakit') { sakitJP += jpCount; studentDailyStatus[date].add('S'); }
-                else if (status === 'Izin') { izinJP += jpCount; studentDailyStatus[date].add('I'); }
-                else if (status === 'Alpa' || status === 'Tidak Hadir' || status === 'A') { alphaJP += jpCount; studentDailyStatus[date].add('A'); }
-                else if (status === 'Dispensasi') { studentDailyStatus[date].add('D'); }
+                let status = record.type || record.keterangan || record.ket || 'Alpa'; 
+                if (status.includes('Sakit') || status === 'S' || status === 'sakit') { sakitJP += jpCount; studentDailyStatus[date].add('S'); }
+                else if (status.includes('Izin') || status === 'I' || status === 'izin') { izinJP += jpCount; studentDailyStatus[date].add('I'); }
+                else if (status.includes('Alpa') || status.includes('Tidak Hadir') || status === 'A' || status === 'alpa') { alphaJP += jpCount; studentDailyStatus[date].add('A'); }
+                else if (status.includes('Dispensasi') || status === 'dispensasi') { studentDailyStatus[date].add('D'); }
                 alreadyCounted = true;
               }
             });
