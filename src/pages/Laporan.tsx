@@ -226,7 +226,7 @@ export default function Laporan({ user, onNavigate }: { user: any, onNavigate: (
                 <p>NIP. {schoolIdentity.headmasterNIP}</p>
               </div>
               <div className="text-center">
-                <p>Beji, {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                <p>Sukorejo, {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                 <p>{isTendik ? tendikJabatan : 'Guru Mata Pelajaran'},</p>
                 <br /><br /><br />
                 <p className="font-bold underline">{user?.['Nama Guru']}</p>

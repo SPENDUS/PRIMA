@@ -3695,7 +3695,7 @@ function VisitorConfigView({ showToast }: { showToast: (msg: string, type?: 'suc
   ];
   const defaultTestimonials = [
     { name: 'Ahmad S.', lembaga: 'SMPN 2 Sukorejo I', fitur: 'Dashboard Publik', testimoni: 'Sangat informatif memantau kehadiran dan kedisiplinan!', rating: 5 },
-    { name: 'Siti M.', lembaga: 'SMPN 1 Beji', fitur: 'Presensi QR', testimoni: 'Aplikasi yang mempermudah sekolah mengecek absensi.', rating: 5 },
+    { name: 'Siti M.', lembaga: 'SMPN 1 Sukorejo', fitur: 'Presensi QR', testimoni: 'Aplikasi yang mempermudah sekolah mengecek absensi.', rating: 5 },
     { name: 'Guru J.', lembaga: 'SMA Maju', fitur: 'Lainnya', testimoni: 'Sangat bagus untuk dicontoh.', rating: 4 },
   ];
 
