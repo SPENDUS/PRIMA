@@ -613,9 +613,9 @@ app.get('/api/admin/stats', async (req, res) => {
         return res.json({ success: true, user: { role: 'admin', Username: user.username, Nama: user.nama } });
       }
     } else if (role === 'tendik') {
-      const { data: user } = await supabase.from('tendik').select('nip, nama_tendik').eq('nip', nip).eq('password', password).single();
+      const { data: user } = await supabase.from('tendik').select('nip, nama_tendik, jabatan').eq('nip', nip).eq('password', password).single();
       if (user) {
-        return res.json({ success: true, user: { role: 'tendik', NIP: user.nip, 'Nama Guru': user.nama_tendik } });
+        return res.json({ success: true, user: { role: 'tendik', NIP: user.nip, 'Nama Guru': user.nama_tendik, Jabatan: user.jabatan || 'Tenaga Kependidikan' } });
       }
     } else if (role === 'siswa') {
       const { data: user } = await supabase.from('murid').select('"NISN", "NIS", "Nama Lengkap", "Kelas", "Password (Default: baujeng(kelas))"').eq('"NIS"', nip).single();

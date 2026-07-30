@@ -9,6 +9,8 @@ export default function Laporan({ user, onNavigate }: { user: any, onNavigate: (
   const [loading, setLoading] = useState(true);
   
   const schoolIdentity = useSchoolIdentity();
+  const isTendik = user?.role === 'tendik';
+  const tendikJabatan = user?.Jabatan || 'Tenaga Administrasi Sekolah';
 
   useEffect(() => {
     fetch(`/api/laporan?nip=${user?.NIP || ''}&namaGuru=${encodeURIComponent(user?.['Nama Guru'] || '')}`)
@@ -117,17 +119,17 @@ export default function Laporan({ user, onNavigate }: { user: any, onNavigate: (
                     <tr className="bg-slate-100 dark:bg-slate-700 print:bg-slate-100">
                       <th className="border border-slate-300 dark:border-slate-600 print:border-slate-300 p-2 print:p-1 text-center w-10 print:w-8">No</th>
                       <th className="border border-slate-300 dark:border-slate-600 print:border-slate-300 p-2 print:p-1 text-left w-32 print:w-24">Hari, Tanggal</th>
-                      <th className="border border-slate-300 dark:border-slate-600 print:border-slate-300 p-2 print:p-1 text-center w-16 print:w-12">Kelas</th>
-                      <th className="border border-slate-300 dark:border-slate-600 print:border-slate-300 p-2 print:p-1 text-left w-32 print:w-24">Mata Pelajaran</th>
-                      <th className="border border-slate-300 dark:border-slate-600 print:border-slate-300 p-2 print:p-1 text-center w-16 print:w-12">Jam Ke</th>
-                      <th className="border border-slate-300 dark:border-slate-600 print:border-slate-300 p-2 print:p-1 text-left min-w-[200px]">Materi/Kegiatan</th>
-                      <th className="border border-slate-300 dark:border-slate-600 print:border-slate-300 p-2 print:p-1 text-left min-w-[150px]">Ketidakhadiran</th>
+                      <th className="border border-slate-300 dark:border-slate-600 print:border-slate-300 p-2 print:p-1 text-center w-32 print:w-24">{isTendik ? 'Jabatan' : 'Kelas'}</th>
+                      <th className="border border-slate-300 dark:border-slate-600 print:border-slate-300 p-2 print:p-1 text-left w-48 print:w-32">{isTendik ? 'Aktivitas Harian' : 'Mata Pelajaran'}</th>
+                      {!isTendik && <th className="border border-slate-300 dark:border-slate-600 print:border-slate-300 p-2 print:p-1 text-center w-16 print:w-12">Jam Ke</th>}
+                      {!isTendik && <th className="border border-slate-300 dark:border-slate-600 print:border-slate-300 p-2 print:p-1 text-left min-w-[200px]">Materi/Kegiatan</th>}
+                      {!isTendik && <th className="border border-slate-300 dark:border-slate-600 print:border-slate-300 p-2 print:p-1 text-left min-w-[150px]">Ketidakhadiran</th>}
                     </tr>
                   </thead>
                   <tbody>
                     {filteredData.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="border border-slate-300 dark:border-slate-600 print:border-slate-300 p-6 text-center text-slate-500 dark:text-slate-400 italic">Tidak ada data jurnal.</td>
+                        <td colSpan={isTendik ? 4 : 7} className="border border-slate-300 dark:border-slate-600 print:border-slate-300 p-6 text-center text-slate-500 dark:text-slate-400 italic">Tidak ada data jurnal.</td>
                       </tr>
                     ) : (
                       filteredData.map((item, idx) => {
@@ -162,13 +164,13 @@ export default function Laporan({ user, onNavigate }: { user: any, onNavigate: (
                                       <td rowSpan={parsedMateri.length} className="border border-slate-300 dark:border-slate-600 print:border-slate-300 p-2 print:p-1 align-top">
                                         {new Date(item.Timestamp).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                                       </td>
-                                      <td rowSpan={parsedMateri.length} className="border border-slate-300 dark:border-slate-600 print:border-slate-300 p-2 print:p-1 text-center font-bold align-top">{item.Kelas}</td>
+                                      <td rowSpan={parsedMateri.length} className="border border-slate-300 dark:border-slate-600 print:border-slate-300 p-2 print:p-1 text-center font-bold align-top">{isTendik ? tendikJabatan : item.Kelas}</td>
                                     </>
                                   )}
-                                  <td className="border border-slate-300 dark:border-slate-600 print:border-slate-300 p-2 print:p-1 align-top break-words">{m.mataPelajaran}</td>
-                                  <td className="border border-slate-300 dark:border-slate-600 print:border-slate-300 p-2 print:p-1 text-center align-top">{jamText}</td>
-                                  <td className="border border-slate-300 dark:border-slate-600 print:border-slate-300 p-2 print:p-1 align-top break-words whitespace-pre-wrap">{m.materi}</td>
-                                  {i === 0 && (
+                                  <td className="border border-slate-300 dark:border-slate-600 print:border-slate-300 p-2 print:p-1 align-top break-words whitespace-pre-wrap">{isTendik ? m.materi : m.mataPelajaran}</td>
+                                  {!isTendik && <td className="border border-slate-300 dark:border-slate-600 print:border-slate-300 p-2 print:p-1 text-center align-top">{jamText}</td>}
+                                  {!isTendik && <td className="border border-slate-300 dark:border-slate-600 print:border-slate-300 p-2 print:p-1 align-top break-words whitespace-pre-wrap">{m.materi}</td>}
+                                  {!isTendik && i === 0 && (
                                     <td rowSpan={parsedMateri.length} className="border border-slate-300 dark:border-slate-600 print:border-slate-300 p-2 print:p-1 text-slate-600 dark:text-slate-300 print:text-slate-600 align-top break-words">
                                       {(() => {
                                         if (!item.Ketidakhadiran || item.Ketidakhadiran === '[]' || item.Ketidakhadiran === 'Nihil') return 'Nihil';
@@ -225,7 +227,7 @@ export default function Laporan({ user, onNavigate }: { user: any, onNavigate: (
               </div>
               <div className="text-center">
                 <p>Beji, {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-                <p>Guru Mata Pelajaran,</p>
+                <p>{isTendik ? tendikJabatan : 'Guru Mata Pelajaran'},</p>
                 <br /><br /><br />
                 <p className="font-bold underline">{user?.['Nama Guru']}</p>
                 <p>NIP. {user?.NIP}</p>
