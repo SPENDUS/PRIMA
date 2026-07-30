@@ -111,6 +111,10 @@ export default function KasihIbuGuru({ user, onNavigate }: { user: any, onNaviga
     }
   };
 
+  const normalizedWaliKelas = user?.waliKelas ? String(user?.waliKelas).toLowerCase().replace('kelas', '').trim() : '';
+  const normalizedSelectedClass = String(selectedClass).toLowerCase().replace('kelas', '').trim();
+  const canValidate = user?.role === 'admin' || normalizedWaliKelas === 'bk' || (normalizedWaliKelas && normalizedWaliKelas === normalizedSelectedClass);
+
   const fetchReports = async () => {
     setLoading(true);
     try {
@@ -447,14 +451,16 @@ export default function KasihIbuGuru({ user, onNavigate }: { user: any, onNaviga
           </select>
         </div>
         <div className="flex flex-col items-end gap-2">
-          <button
-            onClick={handleBulkValidateClick}
-            disabled={isValidating || reports.filter(r => r.status === 'Belum').length === 0}
-            className="bg-green-500 hover:bg-green-600 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 shadow-sm transition-colors"
-          >
-            <CheckCircle className="w-5 h-5" />
-            Validasi Massal ({reports.filter(r => r.status === 'Belum').length})
-          </button>
+          {canValidate && (
+            <button
+              onClick={handleBulkValidateClick}
+              disabled={isValidating || reports.filter(r => r.status === 'Belum').length === 0}
+              className="bg-green-500 hover:bg-green-600 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 shadow-sm transition-colors"
+            >
+              <CheckCircle className="w-5 h-5" />
+              Validasi Massal ({reports.filter(r => r.status === 'Belum').length})
+            </button>
+          )}
           {validatingProgress && (
             <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2.5 mt-1 overflow-hidden">
               <div 
@@ -527,7 +533,7 @@ export default function KasihIbuGuru({ user, onNavigate }: { user: any, onNaviga
                               <span className="flex items-center gap-1 text-red-600 dark:text-red-400 font-bold bg-red-100 dark:bg-red-900/30 px-3 py-1 rounded-lg text-xs">
                                 <XCircle className="w-4 h-4" /> Ditolak
                               </span>
-                            ) : (
+                            ) : canValidate ? (
                               <>
                                 <button 
                                   onClick={() => handleValidate(report.id, 'Ditolak')}
@@ -544,7 +550,7 @@ export default function KasihIbuGuru({ user, onNavigate }: { user: any, onNaviga
                                   <CheckCircle className="w-5 h-5" />
                                 </button>
                               </>
-                            )}
+                              ) : null}
                           </div>
                         </td>
                       </motion.tr>

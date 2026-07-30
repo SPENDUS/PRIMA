@@ -31,10 +31,14 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: number, student: string, type: string) => {
     if (!window.confirm('Yakin ingin menghapus pelanggaran ini?')) return;
     try {
-      const res = await fetch(`/api/pelanggaran/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/pelanggaran/${id}/item`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ student, type })
+      });
       const data = await res.json();
       if (data.success) {
         fetchRekap();
@@ -50,11 +54,13 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
     e.preventDefault();
     if (!editingItem) return;
     try {
-      const res = await fetch(`/api/pelanggaran/${editingItem.id}`, {
+      const res = await fetch(`/api/pelanggaran/${editingItem.id}/item`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          type: editDesc,
+          student: editingItem.studentNama,
+          oldType: editingItem.type,
+          newType: editDesc,
           penanganan: editPenanganan ? 'Sudah Ditangani' : null
         })
       });
@@ -145,6 +151,10 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
       fetchRekap();
     }
   }, [activeTab, kelas]);
+
+  const normalizedWaliKelas = user?.waliKelas ? String(user?.waliKelas).toLowerCase().replace('kelas', '').trim() : '';
+  const normalizedSelectedClass = String(kelas).toLowerCase().replace('kelas', '').trim();
+  const canEditDelete = user?.role === 'admin' || normalizedWaliKelas === 'bk' || (normalizedWaliKelas && normalizedWaliKelas === normalizedSelectedClass);
 
   const fetchRekap = async () => {
     if (!kelas) return;
@@ -453,12 +463,19 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
                                      )}
                                   </td>
                                   <td className="px-6 py-4 text-right flex justify-end gap-2">
-                                     <button onClick={() => handleEditClick(r)} className="p-2 bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600 rounded-lg transition-colors">
-                                        <Edit2 className="w-4 h-4" />
-                                     </button>
-                                     <button onClick={() => handleDelete(r.id)} className="p-2 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 rounded-lg transition-colors">
-                                        <Trash2 className="w-4 h-4" />
-                                     </button>
+                                     {canEditDelete && (
+                                       <>
+                                         <button onClick={() => {
+                                            const augmentedR = { ...r, studentNama: item.nama };
+                                            handleEditClick(augmentedR);
+                                         }} className="p-2 bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600 rounded-lg transition-colors">
+                                            <Edit2 className="w-4 h-4" />
+                                         </button>
+                                         <button onClick={() => handleDelete(r.id, item.nama, r.type)} className="p-2 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 rounded-lg transition-colors">
+                                            <Trash2 className="w-4 h-4" />
+                                         </button>
+                                       </>
+                                     )}
                                   </td>
                                 </tr>
                               ))}

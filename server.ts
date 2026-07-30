@@ -615,7 +615,7 @@ app.get('/api/admin/stats', async (req, res) => {
       }
     } else {
       // Default to Guru
-      const { data: user } = await supabase.from('guru').select('nip, nama_guru, target_jp, mengajar').eq('nip', nip).eq('password', password).single();
+      const { data: user } = await supabase.from('guru').select('nip, nama_guru, target_jp, mengajar, "Wali_Kelas"').eq('nip', nip).eq('password', password).single();
       
       if (user) {
         const today = new Date();
@@ -631,7 +631,8 @@ app.get('/api/admin/stats', async (req, res) => {
             role: 'guru',
             NIP: user.nip,
             'Nama Guru': user.nama_guru,
-            Mengajar: user.mengajar
+            Mengajar: user.mengajar,
+            waliKelas: user.Wali_Kelas
           },
           schedule: schedule || [],
           targetJP: user.target_jp
@@ -956,10 +957,25 @@ app.get('/api/admin/stats', async (req, res) => {
 
   
   // --- PELANGGARAN ENDPOINTS ---
-  app.delete('/api/pelanggaran/:id', async (req, res) => {
+  app.delete('/api/pelanggaran/:id/item', async (req, res) => {
     try {
       const { id } = req.params;
-      const { error } = await supabase.from('jurnal').delete().eq('id', id);
+      const { student, type } = req.body;
+      const { data, error: fetchErr } = await supabase.from('jurnal').select('catatan_mengajar').eq('id', id).single();
+      if (fetchErr) throw fetchErr;
+
+      let catatan = [];
+      if (data && data.catatan_mengajar && data.catatan_mengajar !== 'Nihil') {
+        try {
+          catatan = typeof data.catatan_mengajar === 'string' ? JSON.parse(data.catatan_mengajar) : data.catatan_mengajar;
+          catatan = catatan.filter((c: any) => !(c.student === student && c.type === type));
+        } catch (e) {}
+      }
+
+      const { error } = await supabase.from('jurnal').update({
+        catatan_mengajar: JSON.stringify(catatan)
+      }).eq('id', id);
+
       if (error) throw error;
       res.json({ success: true, message: 'Berhasil dihapus' });
     } catch (e: any) {
@@ -967,22 +983,22 @@ app.get('/api/admin/stats', async (req, res) => {
     }
   });
 
-  app.put('/api/pelanggaran/:id', async (req, res) => {
+  app.put('/api/pelanggaran/:id/item', async (req, res) => {
     try {
       const { id } = req.params;
-      const { type, penanganan } = req.body;
+      const { student, oldType, newType, penanganan } = req.body;
       
-      // Get existing
       const { data, error: fetchErr } = await supabase.from('jurnal').select('catatan_mengajar').eq('id', id).single();
       if (fetchErr) throw fetchErr;
 
       let catatan = [];
-      if (data && data.catatan_mengajar) {
+      if (data && data.catatan_mengajar && data.catatan_mengajar !== 'Nihil') {
         try {
-          catatan = JSON.parse(data.catatan_mengajar);
-          if (Array.isArray(catatan) && catatan.length > 0) {
-            catatan[0].type = type;
-            catatan[0].penanganan = penanganan;
+          catatan = typeof data.catatan_mengajar === 'string' ? JSON.parse(data.catatan_mengajar) : data.catatan_mengajar;
+          const targetIndex = catatan.findIndex((c: any) => c.student === student && c.type === oldType);
+          if (targetIndex > -1) {
+            if (newType) catatan[targetIndex].type = newType;
+            if (penanganan !== undefined) catatan[targetIndex].penanganan = penanganan;
           }
         } catch (e) {}
       }
