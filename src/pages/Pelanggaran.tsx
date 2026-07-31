@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Edit2, Trash2, X, Send, CheckCircle2, ClipboardList, PlusCircle, Search } from 'lucide-react';
+import { useSchoolIdentity } from '../hooks/useSchoolIdentity';
+import { ArrowLeft, Edit2, Trash2, X, Send, CheckCircle2, ClipboardList, PlusCircle, Search, Printer } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigate: (page: string) => void }) {
@@ -8,6 +9,7 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
   const [selectedSiswa, setSelectedSiswa] = useState('');
   const [pelanggaranDesc, setPelanggaranDesc] = useState('');
   const [penanganan, setPenanganan] = useState(false);
+  const schoolIdentity = useSchoolIdentity();
   const [initialData, setInitialData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -282,7 +284,7 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
         )}
 
         
-        <div className="flex gap-2 mb-6 p-1 bg-slate-200 dark:bg-slate-700/50 rounded-xl overflow-x-auto">
+        <div className="flex gap-2 mb-6 p-1 bg-slate-200 dark:bg-slate-700/50 rounded-xl overflow-x-auto print:hidden">
           <button
             onClick={() => setActiveTab('input')}
             className={`flex-1 min-w-[150px] flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-bold text-sm transition-all whitespace-nowrap ${
@@ -308,7 +310,7 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
         </div>
 
         {activeTab === 'input' ? (
-<div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+<div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 print:shadow-none print:border-none print:p-0">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Pilih Kelas</label>
@@ -404,9 +406,10 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
 
         ) : (
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-            <div className="mb-6">
-              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Pilih Kelas</label>
-              <select 
+            <div className="mb-6 flex justify-between items-end gap-4 print:hidden">
+              <div className="flex-1">
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Pilih Kelas</label>
+                <select 
                 value={kelas}
                 onChange={(e) => setKelas(e.target.value)}
                 className="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 bg-slate-50 dark:bg-slate-700 dark:text-white"
@@ -418,6 +421,15 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
                   return <option key={k} value={val}>{label}</option>;
                 })}
               </select>
+              </div>
+              {kelas && rekapData.length > 0 && (
+                <button
+                  onClick={() => window.print()}
+                  className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-sm flex items-center gap-2"
+                >
+                  <Printer className="w-5 h-5" /> Cetak
+                </button>
+              )}
             </div>
 
             {!kelas ? (
@@ -427,42 +439,53 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
             ) : rekapData.length === 0 ? (
                <div className="text-center p-8 text-slate-500">Tidak ada data pelanggaran di kelas ini.</div>
             ) : (
-               <div className="space-y-6">
+               <div className="space-y-6 print:space-y-4">
+                  {/* Print Header */}
+                  <div className="hidden print:block mb-8">
+                    <div className="flex items-center gap-6 border-b-2 border-black pb-4 pt-4">
+                      {schoolIdentity.schoolLogo && <img src={schoolIdentity.schoolLogo} className="h-24 w-24 object-contain" alt="Logo" />}
+                      <div className="text-left text-black">
+                        <h3 className="text-2xl font-bold uppercase tracking-wide">{schoolIdentity.schoolName}</h3>
+                        <h4 className="text-xl font-semibold mt-1">Rekapan Pelanggaran - Kelas {kelas}</h4>
+                        <p className="text-sm mt-1">Tanggal Cetak: {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                      </div>
+                    </div>
+                  </div>
                   {rekapData.map((item, idx) => (
-                     <div key={idx} className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden shadow-sm">
-                        <div className="flex justify-between items-center p-6 bg-white dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700">
+                     <div key={idx} className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden shadow-sm print:shadow-none print:rounded-none print:border-slate-400">
+                        <div className="flex justify-between items-center p-6 bg-white dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700 print:p-3 print:bg-white print:border-slate-400">
                            <h4 className="font-bold text-lg text-slate-800 dark:text-white">{item.nama}</h4>
                            <div className="bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 font-bold px-4 py-2 rounded-lg">
                              Total: {item.totalPoin} Poin
                            </div>
                         </div>
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-left text-sm text-slate-600 dark:text-slate-400">
-                            <thead className="bg-slate-50 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300">
+                        <div className="overflow-x-auto print:border-none">
+                          <table className="w-full text-left text-sm text-slate-600 dark:text-slate-400 print:border-collapse print:border print:border-slate-400">
+                            <thead className="bg-slate-50 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 print:bg-white print:text-black">
                               <tr>
-                                <th className="px-6 py-4 font-semibold">Tanggal</th>
-                                <th className="px-6 py-4 font-semibold">Pelanggaran</th>
-                                <th className="px-6 py-4 font-semibold">Poin</th>
-                                <th className="px-6 py-4 font-semibold">Guru Pelapor</th>
-                                <th className="px-6 py-4 font-semibold">Status Penanganan</th>
-                                <th className="px-6 py-4 font-semibold text-right">Aksi</th>
+                                <th className="px-6 py-4 font-semibold print:border print:border-slate-400 print:px-2 print:py-1">Tanggal</th>
+                                <th className="px-6 py-4 font-semibold print:border print:border-slate-400 print:px-2 print:py-1">Pelanggaran</th>
+                                <th className="px-6 py-4 font-semibold print:border print:border-slate-400 print:px-2 print:py-1">Poin</th>
+                                <th className="px-6 py-4 font-semibold print:border print:border-slate-400 print:px-2 print:py-1">Guru Pelapor</th>
+                                <th className="px-6 py-4 font-semibold print:border print:border-slate-400 print:px-2 print:py-1">Status Penanganan</th>
+                                <th className="px-6 py-4 font-semibold print:border print:border-slate-400 print:px-2 print:py-1 text-right print:hidden">Aksi</th>
                               </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-slate-800">
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-slate-800 print:divide-slate-300 print:text-black">
                               {item.rincian.map((r: any, rIdx: number) => (
                                 <tr key={rIdx} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                                  <td className="px-6 py-4 whitespace-nowrap">{r.date}</td>
-                                  <td className="px-6 py-4 max-w-xs">{r.type}</td>
-                                  <td className="px-6 py-4 font-bold text-red-600">{r.poin}</td>
-                                  <td className="px-6 py-4 whitespace-nowrap">{r.guru}</td>
-                                  <td className="px-6 py-4">
+                                  <td className="px-6 py-4 print:border print:border-slate-400 print:px-2 print:py-1 whitespace-nowrap">{r.date}</td>
+                                  <td className="px-6 py-4 print:border print:border-slate-400 print:px-2 print:py-1 max-w-xs">{r.type}</td>
+                                  <td className="px-6 py-4 print:border print:border-slate-400 print:px-2 print:py-1 font-bold text-red-600">{r.poin}</td>
+                                  <td className="px-6 py-4 print:border print:border-slate-400 print:px-2 print:py-1 whitespace-nowrap">{r.guru}</td>
+                                  <td className="px-6 py-4 print:border print:border-slate-400 print:px-2 print:py-1">
                                      {r.penanganan ? (
                                        <span className="px-2 py-1 rounded bg-green-100 text-green-700 text-xs font-medium border border-green-200">Ditangani</span>
                                      ) : (
                                        <span className="px-2 py-1 rounded bg-yellow-100 text-yellow-700 text-xs font-medium border border-yellow-200">Belum</span>
                                      )}
                                   </td>
-                                  <td className="px-6 py-4 text-right flex justify-end gap-2">
+                                  <td className="px-6 py-4 print:border print:border-slate-400 print:px-2 print:py-1 text-right flex justify-end gap-2 print:hidden">
                                      {canEditDelete && (
                                        <>
                                          <button onClick={() => {
