@@ -1,0 +1,16 @@
+export const HABIT_POINTS: Record<string, { points: number, icon: string }> = {
+  'Bangun Pagi': { points: 2, icon: '🌅' },
+  'Beribadah': { points: 5, icon: '🕌' },
+  'Berolahraga': { points: 2, icon: '🏃' },
+  'Makan Sehat': { points: 2, icon: '🥗' },
+  'Gemar Belajar': { points: 2, icon: '📚' },
+  'Bermasyarakat': { points: 2, icon: '🤝' },
+  'Tidur Cepat': { points: 2, icon: '😴' },
+  'bangun_pagi': { points: 2, icon: '🌅' },
+  'beribadah': { points: 5, icon: '🕌' },
+  'berolahraga': { points: 2, icon: '🏃' },
+  'makan_sehat': { points: 2, icon: '🥗' },
+  'gemar_belajar': { points: 2, icon: '📚' },
+  'bermasyarakat': { points: 2, icon: '🤝' },
+  'tidur_cepat': { points: 2, icon: '😴' },
+};

@@ -110,7 +110,7 @@ export default function Laporan({ user, onNavigate }: { user: any, onNavigate: (
                           {schoolIdentity.schoolLogo && <img src={schoolIdentity.schoolLogo} className="h-24 w-24 object-contain" alt="Logo" />}
                           <div className="text-left">
                             <h3 className="text-2xl font-bold uppercase tracking-wide">{schoolIdentity.schoolName}</h3>
-                            <h4 className="text-xl font-semibold mt-1">Jurnal Guru: {user?.['Nama Guru']}</h4>
+                            <h4 className="text-xl font-semibold mt-1">{isTendik ? 'Jurnal Tendik:' : 'Jurnal Guru:'} {user?.['Nama Guru']}</h4>
                             <p className="text-sm text-slate-600 dark:text-slate-400 print:text-slate-600 mt-1">Periode: {filterBulan === 'semua' ? 'Semua Waktu' : filterBulan}</p>
                           </div>
                         </div>

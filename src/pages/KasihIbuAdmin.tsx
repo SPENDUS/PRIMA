@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Heart, Save, Star, Gift, Shield, Award, Trophy, Smile, Users, Medal, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from 'recharts';
+import { HABIT_POINTS } from '../utils/habitPoints';
 
 export default function KasihIbuAdmin({ showToast }: { showToast: (msg: string, type?: 'success' | 'error') => void }) {
   const [pointPrice, setPointPrice] = useState<string>('100');
@@ -38,7 +39,7 @@ export default function KasihIbuAdmin({ showToast }: { showToast: (msg: string, 
   const fetchTop10 = async () => {
     setLoadingTop10(true);
     try {
-      const { data, error } = await supabase.from('kasih_ibu').select('nama_murid, kelas, nisn');
+      const { data, error } = await supabase.from('kasih_ibu').select('nama_murid, kelas, nisn, validasi_walikelas, jenis_kebiasaan');
       if (data) {
         const studentCounts: Record<string, { nama: string, kelas: string, points: number, nisn: string }> = {};
         data.forEach(r => {
@@ -46,7 +47,15 @@ export default function KasihIbuAdmin({ showToast }: { showToast: (msg: string, 
           if (!studentCounts[key]) {
             studentCounts[key] = { nama: r.nama_murid, kelas: r.kelas || '-', points: 0, nisn: r.nisn };
           }
-          studentCounts[key].points += 1;
+          let pts = 0;
+          if (r.jenis_kebiasaan && r.jenis_kebiasaan.startsWith('Tukar Poin')) {
+            const match = r.jenis_kebiasaan.match(/\(-(\d+)\)/);
+            if (match) pts = -parseInt(match[1]);
+          } else if (r.validasi_walikelas === 'Valid') {
+            const matchedKey = Object.keys(HABIT_POINTS).find(k => k.toLowerCase() === r.jenis_kebiasaan?.toLowerCase());
+            if (matchedKey) pts = HABIT_POINTS[matchedKey].points;
+          }
+          studentCounts[key].points += pts;
         });
         
         const sortedStudents = Object.values(studentCounts)
@@ -110,7 +119,7 @@ export default function KasihIbuAdmin({ showToast }: { showToast: (msg: string, 
     setLoadingTop(true);
     try {
       // Fetch all points for this class
-      const { data: records } = await supabase.from('kasih_ibu').select('nama_murid, nisn').eq('kelas', kelas);
+      const { data: records } = await supabase.from('kasih_ibu').select('nama_murid, nisn, validasi_walikelas, jenis_kebiasaan').eq('kelas', kelas);
       if (records) {
         const studentCounts: Record<string, { nama: string, points: number, nisn: string }> = {};
         records.forEach(r => {
@@ -118,7 +127,15 @@ export default function KasihIbuAdmin({ showToast }: { showToast: (msg: string, 
           if (!studentCounts[key]) {
             studentCounts[key] = { nama: r.nama_murid, points: 0, nisn: r.nisn };
           }
-          studentCounts[key].points += 1;
+          let pts = 0;
+          if (r.jenis_kebiasaan && r.jenis_kebiasaan.startsWith('Tukar Poin')) {
+            const match = r.jenis_kebiasaan.match(/\(-(\d+)\)/);
+            if (match) pts = -parseInt(match[1]);
+          } else if (r.validasi_walikelas === 'Valid') {
+            const matchedKey = Object.keys(HABIT_POINTS).find(k => k.toLowerCase() === r.jenis_kebiasaan?.toLowerCase());
+            if (matchedKey) pts = HABIT_POINTS[matchedKey].points;
+          }
+          studentCounts[key].points += pts;
         });
         
         const sortedStudents = Object.values(studentCounts)

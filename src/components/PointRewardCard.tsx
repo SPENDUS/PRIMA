@@ -2,15 +2,6 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Trophy, ChevronDown, ChevronUp } from 'lucide-react';
 
-const HABIT_POINTS: Record<string, { points: number, icon: string }> = {
-  'Bangun Pagi': { points: 2, icon: '🌅' },
-  'Beribadah': { points: 5, icon: '🕌' },
-  'Berolahraga': { points: 2, icon: '🏃' },
-  'Makan Sehat': { points: 2, icon: '🥗' },
-  'Gemar Belajar': { points: 2, icon: '📚' },
-  'Bermasyarakat': { points: 2, icon: '🤝' },
-  'Tidur Cepat': { points: 2, icon: '😴' },
-};
 
 export default function PointRewardCard({ user }: { user: any }) {
   const [loading, setLoading] = useState(true);
@@ -29,7 +20,7 @@ export default function PointRewardCard({ user }: { user: any }) {
         // Fetch all habits for the class
         const { data, error } = await supabase
           .from('kasih_ibu')
-          .select('nisn, jenis_kebiasaan, timestamp')
+          .select('nisn, jenis_kebiasaan, timestamp, validasi_walikelas')
           .eq('kelas', user.Kelas)
           .order('timestamp', { ascending: false });
 
@@ -46,6 +37,7 @@ export default function PointRewardCard({ user }: { user: any }) {
         currentStudentBreakdown['Tukar Poin'] = 0;
 
         data?.forEach(entry => {
+          if (entry.validasi_walikelas !== 'Valid' && !entry.jenis_kebiasaan?.startsWith('Tukar Poin')) return;
           let points = 0;
           const habitInfo = HABIT_POINTS[entry.jenis_kebiasaan];
           const isCurrentUser = 
