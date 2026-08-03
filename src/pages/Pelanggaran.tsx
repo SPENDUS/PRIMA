@@ -23,9 +23,24 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
 
   const handleEditClick = (r: any) => {
     setEditingItem(r);
-    setEditDesc(r.type);
+    setEditDesc(r.originalType || r.type);
     setEditPenanganan(!!r.penanganan);
-    const foundCat = criteriaList.find(c => c.options.some(o => o.desc === r.type));
+    const typeToMatch = r.originalType || r.type;
+    let foundCat = criteriaList.find(c => c.options.some(o => o.desc === typeToMatch));
+    // Fallback match if using old string formats
+    if (typeToMatch.startsWith('Terlambat >5 menit')) {
+        const option = criteriaList.flatMap(c => c.options).find(o => o.desc.startsWith('Terlambat >5 menit'));
+        if (option) {
+            setEditDesc(option.desc);
+            foundCat = criteriaList.find(c => c.options.includes(option));
+        }
+    } else if (typeToMatch.startsWith('Alpa/Tanpa keterangan')) {
+        const option = criteriaList.flatMap(c => c.options).find(o => o.desc.startsWith('Alpa/Tanpa keterangan'));
+        if (option) {
+            setEditDesc(option.desc);
+            foundCat = criteriaList.find(c => c.options.includes(option));
+        }
+    }
     if (foundCat) {
       setEditKategori(foundCat.label);
     } else {
@@ -61,7 +76,7 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           student: editingItem.studentNama,
-          oldType: editingItem.type,
+          oldType: editingItem.originalType || editingItem.type,
           newType: editDesc,
           penanganan: editPenanganan ? 'Sudah Ditangani' : null
         })
@@ -100,13 +115,8 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
       { id: "C15", desc: "Tidak ikut program Jumat (1 poin)" }
     ]},
     { label: "Pelanggaran Sedang (2 - 10 Poin)", options: [
-      { id: "B1a", desc: "Terlambat >5 menit (1-3x) - 2 poin" },
-      { id: "B1b", desc: "Terlambat >5 menit (4-6x) - 4 poin" },
-      { id: "B1c", desc: "Terlambat >5 menit (>7x) - 8 poin" },
-      { id: "B2a", desc: "Alpa/Tanpa keterangan (1-3x) - 2 poin" },
-      { id: "B2b", desc: "Alpa/Tanpa keterangan (4-6x) - 4 poin" },
-      { id: "B2c", desc: "Alpa/Tanpa keterangan (7-9x) - 8 poin" },
-      { id: "B2d", desc: "Alpa/Tanpa keterangan (>10x) - 10 poin" },
+      { id: "B1", desc: "Terlambat >5 menit (Poin otomatis diakumulasi)" },
+      { id: "B2", desc: "Alpa/Tanpa keterangan (Poin otomatis diakumulasi)" },
       { id: "B3", desc: "Membawa HP ke sekolah (5 poin)" },
       { id: "B4", desc: "Bermain game di perangkat (5 poin)" },
       { id: "B5", desc: "Membawa motor ke sekolah (5 poin)" },
@@ -167,29 +177,54 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
         .select('id, timestamp, catatan_mengajar, mata_pelajaran, nama_guru')
         .or(`kelas.eq."${kelas}",kelas.eq."Kelas ${kelas}"`)
         .order('timestamp', { ascending: false });
-
       if (error) throw error;
-
-      const pelanggaranMap: Record<string, { nama: string, totalPoin: number, rincian: any[] }> = {};
-
-      journalData?.forEach(j => {
+      const pelanggaranMap: Record<string, { nama: string, totalPoin: number, rincian: any[], countTerlambat: number, countAlpa: number }> = {};
+      
+      const reversedJournalData = [...(journalData || [])].reverse();
+      
+      reversedJournalData.forEach(j => {
         if (j.catatan_mengajar && j.catatan_mengajar !== 'Nihil' && j.catatan_mengajar !== '[]') {
           try {
             const parsed = typeof j.catatan_mengajar === 'string' ? JSON.parse(j.catatan_mengajar) : j.catatan_mengajar;
             if (Array.isArray(parsed)) {
               parsed.forEach((d: any) => {
                 if (d.type && d.student) {
-                  const match = d.type.match(/\((\d+)\s+poin\)/i);
-                  let poin = match ? parseInt(match[1]) : 0;
-                  
                   if (!pelanggaranMap[d.student]) {
-                    pelanggaranMap[d.student] = { nama: d.student, totalPoin: 0, rincian: [] };
+                    pelanggaranMap[d.student] = { nama: d.student, totalPoin: 0, rincian: [], countTerlambat: 0, countAlpa: 0 };
                   }
+                  
+                  let type = String(d.type || '');
+                  let originalType = type;
+                  let poin = 0;
+
+                  if (type.includes('Terlambat >5 menit') || type.includes('Terlambat > 5 menit')) {
+                      pelanggaranMap[d.student].countTerlambat++;
+                      const occ = pelanggaranMap[d.student].countTerlambat;
+                      if (occ === 3) poin = 2;
+                      else if (occ >= 4 && occ <= 6) poin = 4;
+                      else if (occ >= 7) poin = 8;
+                      else poin = 0;
+                      type = `Terlambat >5 menit (Pelanggaran ke-${occ})`;
+                  } else if (type.includes('Alpa/Tanpa keterangan')) {
+                      pelanggaranMap[d.student].countAlpa++;
+                      const occ = pelanggaranMap[d.student].countAlpa;
+                      if (occ === 3) poin = 2;
+                      else if (occ >= 4 && occ <= 6) poin = 4;
+                      else if (occ >= 7 && occ <= 9) poin = 8;
+                      else if (occ >= 10) poin = 10;
+                      else poin = 0;
+                      type = `Alpa/Tanpa keterangan (Pelanggaran ke-${occ})`;
+                  } else {
+                      const match = type.match(/(\d+)\s*poin/i);
+                      if (match) poin = parseInt(match[1]);
+                  }
+
                   pelanggaranMap[d.student].totalPoin += poin;
-                  pelanggaranMap[d.student].rincian.push({
+                  pelanggaranMap[d.student].rincian.unshift({
                     id: j.id,
                     date: new Date(j.timestamp).toLocaleDateString('id-ID'),
-                    type: d.type,
+                    type: type,
+                    originalType: originalType,
                     poin: poin,
                     guru: j.nama_guru,
                     penanganan: d.penanganan || null
@@ -200,7 +235,6 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
           } catch (e) {}
         }
       });
-
       setRekapData(Object.values(pelanggaranMap).sort((a: any, b: any) => b.totalPoin - a.totalPoin));
     } catch (e) {
       console.error("Error fetching rekap:", e);
@@ -494,7 +528,7 @@ export default function Pelanggaran({ user, onNavigate }: { user: any, onNavigat
                                          }} className="p-2 bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600 rounded-lg transition-colors">
                                             <Edit2 className="w-4 h-4" />
                                          </button>
-                                         <button onClick={() => handleDelete(r.id, item.nama, r.type)} className="p-2 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 rounded-lg transition-colors">
+                                         <button onClick={() => handleDelete(r.id, item.nama, r.originalType || r.type)} className="p-2 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 rounded-lg transition-colors">
                                             <Trash2 className="w-4 h-4" />
                                          </button>
                                        </>
